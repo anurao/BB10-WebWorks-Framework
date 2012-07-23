@@ -33,8 +33,18 @@ function init() {
     utils = requireLocal("../chrome/lib/utils");
 }
 
-function handleTouchEnd(actionId) {
+function handleTouchEnd(actionId, menuItem) {
+    if (menuItem) {
+        menuItem.className = 'menuItem peekItem';
+    }
     window.qnx.webplatform.getController().remoteExec(1, 'executeMenuAction', [actionId]);
+}
+
+function handleTouchStart(menuItem) {
+    if (!menuItem || !menuPeeked) {
+        return;
+    }
+    menuItem.className = 'menuItem showItem';
 }
 
 contextmenu = {
@@ -70,7 +80,8 @@ contextmenu = {
             menuItem.appendChild(menuImage);
             menuItem.appendChild(document.createTextNode(options[i].label));
             menuItem.setAttribute("class", "menuItem");
-            menuItem.ontouchend = handleTouchEnd.bind(this, options[i].actionId);
+            menuItem.ontouchstart = handleTouchStart.bind(this, menuItem);
+            menuItem.ontouchend = handleTouchEnd.bind(this, options[i].actionId, menuItem);
             menuItem.addEventListener('mousedown', contextmenu.handleMouseDown, false);
             menu.appendChild(menuItem);
         }

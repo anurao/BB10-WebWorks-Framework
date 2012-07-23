@@ -51,6 +51,7 @@ var _apiDir = __dirname + "./../../../../../ext/ui.contextmenu",
 describe("blackberry.ui.actions.handlers index", function () {
     beforeEach(function () {
         GLOBAL.window.qnx.webplatform = mockedWebPlatform;
+        GLOBAL.window.webworks = mockedWebWorks;
         GLOBAL.qnx = {
             callExtensionMethod: jasmine.createSpy("bond"),
             webplatform : {

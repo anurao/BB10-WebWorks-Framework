@@ -93,12 +93,13 @@ body {
     background-repeat: no-repeat;
 }
 
-/* Show and hid the menu items themselves */
+/* Show and hide the menu items themselves */
 .showItem {
     -webkit-transform:translate(-462px,0);
     z-index:101;
 }
 
+>>>>>>> Context Menu API Refactor with Enable/Disable
 .peekItem {
     -webkit-transform:translate(0px,0);
 }
