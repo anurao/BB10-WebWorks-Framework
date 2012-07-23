@@ -80,7 +80,8 @@ describe("ui-resources/contextmenu", function () {
                 addEventListener: jasmine.createSpy()
             }),
             body: {
-                addEventListener: jasmine.createSpy()
+                addEventListener: jasmine.createSpy(),
+                removeEventListener: jasmine.createSpy()
             },
 
             getElementsByClassName: function (id) {
@@ -115,7 +116,8 @@ describe("ui-resources/contextmenu", function () {
                         addEventListener: jasmine.createSpy(),
                         removeEventListener: jasmine.createSpy(),
                         className: '',
-                        style: {}
+                        style: {},
+                        removeChild: jasmine.createSpy()
                     };
                     returnElement = menuHandle;
                 } else if (id === "contextMenuHeadText") {
@@ -132,7 +134,8 @@ describe("ui-resources/contextmenu", function () {
                         childNodes: [],
                         appendChild: jasmine.createSpy(),
                         style: {overflowY: '', height: ''},
-                        className: ''
+                        className: '',
+                        removeChild: jasmine.createSpy()
                     };
                     returnElement = menuContent;
                 }
@@ -255,6 +258,30 @@ describe("ui-resources/contextmenu", function () {
         numberOfMenuItems = 4;
         contextmenu.peekContextMenu(true);
         expect(menuHandle.className).toEqual('showContextMenuHandle');
+    });
+
+    xit("can layout the header title correctly when there is no sub header text", function () {
+        var headerElement = document.getElementById('contextMenuHeadText');
+
+        contextmenu.peekContextMenu(true);
+        contextmenu.setHeadText('My Title');
+        contextmenu.setSubheadText('');
+        contextmenu.showContextMenu();
+
+        expect(headerElement.style.height).toEqual('105px');
+        expect(headerElement.style.lineHeight).toEqual('105px');
+    });
+
+    xit("can layout the sub header text when there is no header text", function () {
+        var subHeaderElement = document.getElementById('contextMenuSubHeadText');
+
+        contextmenu.peekContextMenu(true);
+        contextmenu.setHeadText('');
+        contextmenu.setSubheadText('My SubText');
+        contextmenu.showContextMenu();
+
+        expect(subHeaderElement.style.height).toEqual('105px');
+        expect(subHeaderElement.style.lineHeight).toEqual('105px');
     });
 
 });
