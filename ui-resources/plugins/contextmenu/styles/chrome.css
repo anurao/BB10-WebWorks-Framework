@@ -96,12 +96,14 @@ body {
 /* Show and hide the menu items themselves */
 .showItem {
     -webkit-transform:translate(-462px,0);
+    border-image: url('../assets/core_crosscutmenu_selected.png') 2 1 2 13 / 1 1 1 1;
     z-index:101;
 }
 
 >>>>>>> Context Menu API Refactor with Enable/Disable
 .peekItem {
     -webkit-transform:translate(0px,0);
+    border-image: none;
 }
 /* Show and hide the menu */
 .showMenu {
@@ -137,7 +139,7 @@ body {
 }
 
 .menuItem:active {
-    border-image: url('../assets/core_crosscutmenu_selected.png') 2 1 2 13 / 1 1 1 1;
+    /*border-image: url('../assets/core_crosscutmenu_selected.png') 2 1 2 13 / 1 1 1 1; */
 }
 
 .menuImage {
