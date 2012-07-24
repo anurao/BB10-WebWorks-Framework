@@ -44,14 +44,14 @@ function getNewElementSelection(currentYPosition, elementHeight) {
         elementIndex;
 
     if ((elementsLength % 2) === 0) {
-        elementIndex = (elementsLength / 2)  + Math.floor(diff / elementHeight);
+        elementIndex = (elementsLength >> 1)  + (diff / elementHeight) | 0;
     } else {
         // Base case that we have just a single one, so index that one on touchend
         if (elementsLength === 1) {
             elementIndex = 0;
         }
         else {
-            elementIndex = Math.ceil(elementsLength / 2) + Math.floor(diff / elementHeight);
+            elementIndex = (elementsLength >> 1) + (diff / elementHeight) | 0;
         }
     }
 
