@@ -22,7 +22,9 @@ var contextmenu,
     utils,
     includePath,
     elementToExecute,
-    previousIndex;
+    previousIndex,
+    elements,
+    elementsLength;
 
 function requireLocal(id) {
     return require(!!require.resolve ? "../../" + id.replace(/\/chrome/, "") : id);
@@ -35,27 +37,27 @@ function init() {
     utils = requireLocal("../chrome/lib/utils");
 }
 
-function getNewElementSelection(elements, currentYPosition, elementHeight) {
+function getNewElementSelection(currentYPosition, elementHeight) {
     var screenHeight = window.screen.availHeight,
         middle = screenHeight / 2,
         diff = currentYPosition - middle,
         elementIndex;
 
-    if ((elements.length % 2) === 0) {
-        elementIndex = (elements.length / 2)  + Math.floor(diff / elementHeight);
+    if ((elementsLength % 2) === 0) {
+        elementIndex = (elementsLength / 2)  + Math.floor(diff / elementHeight);
     } else {
         // Base case that we have just a single one, so index that one on touchend
-        if (elements.length === 1) {
+        if (elementsLength === 1) {
             elementIndex = 0;
         }
         else {
-            elementIndex = Math.ceil(elements.length / 2) + Math.floor(diff / elementHeight);
+            elementIndex = Math.ceil(elementsLength / 2) + Math.floor(diff / elementHeight);
         }
     }
 
     //Check if the index is greater then the number of elems or less then
     //if so, let's reset the elements and hide all elements
-    if(elementIndex > elements.length || elementIndex < 0) {
+    if (elementIndex > elementsLength || elementIndex < 0) {
         previousIndex = null;
         elementToExecute = null;
         return;
@@ -73,17 +75,17 @@ function getNewElementSelection(elements, currentYPosition, elementHeight) {
     return elementToExecute;
 }
 
-function handleTouchMove(eve) {
-    var elements = document.getElementsByClassName("menuItem"),
-        menuItem = elements[0],
-        currentYPosition = eve.touches[0].clientY,
-        elementHeight = menuItem.clientHeight,
+function handleTouchMove(touchEvent) {
+    touchEvent.preventDefault();
+
+    var currentYPosition = touchEvent.touches[0].clientY,
+        elementHeight = elements[0].clientHeight,
         elementToShow,
         previousToHideIndex = previousIndex;
 
     //Base on our current Y position let's calculate which
     // element this touch point belongs to
-    elementToShow = getNewElementSelection(elements, currentYPosition, elementHeight);
+    elementToShow = getNewElementSelection(currentYPosition, elementHeight);
 
     if (elementToShow) {
         if ((typeof previousToHideIndex !== "undefined") && elements[previousToHideIndex]) {
@@ -93,12 +95,12 @@ function handleTouchMove(eve) {
     }
 }
 
-function handleTouchStart(menuItem) {
-    if (!menuItem || !menuPeeked) {
+/*function handleTouchStart(menuItem) {
+    /*if (!menuItem || !menuPeeked) {
         return;
     }
     menuItem.className = 'menuItem showItem';
-}
+}*/
 
 function handleTouchEnd(actionId, menuItem) {
     if (menuItem) {
@@ -148,7 +150,7 @@ contextmenu = {
             menuItem.appendChild(document.createTextNode(options[i].label));
             menuItem.setAttribute("class", "menuItem");
             menuItem.setAttribute("actionId", options[i].actionId);
-            menuItem.ontouchstart = handleTouchStart.bind(this, menuItem);
+            //menuItem.ontouchstart = handleTouchStart.bind(this, menuItem);
             menuItem.ontouchend = handleTouchEnd.bind(this, options[i].actionId, menuItem);
             menuItem.ontouchmove = handleTouchMove.bind(this);
             menuItem.addEventListener('mousedown', contextmenu.handleMouseDown, false);
@@ -187,6 +189,13 @@ contextmenu = {
             evt.cancelBubble = true;
             menuPeeked = false;
         }
+
+        // reset the event listeners since we are now shown, and do not
+        // want to continue unfolding the menu
+        for (i = 0; i < elements.length; i++) {
+            elements[i].ontouchmove = null;
+        }
+
     },
 
     isMenuVisible: function () {
