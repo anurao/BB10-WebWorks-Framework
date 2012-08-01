@@ -24,6 +24,11 @@
         <script src="../chrome/webplatform.js" type="text/javascript"></script>
         <script src="index.js" type="text/javascript"></script>
         <script type="text/javascript">
+
+            function hideMenu() {
+                require('contextmenu').hideContextMenu();
+            }
+
             function showMenu(args) {
                 var menu = require('contextmenu'),
                     items = eval(args.menuItems),
