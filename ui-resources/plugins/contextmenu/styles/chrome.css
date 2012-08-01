@@ -18,6 +18,7 @@ body {
     -webkit-box-shadow: -10px 0px 25px #121212;
     -webkit-transition-duration: 0.25s;
     -webkit-animation-timing-function: ease-out;
+    -webkit-tranform:translateZ(0);
     position: absolute;
     right: -583px;
     top: 0px;
@@ -122,8 +123,11 @@ body {
 .menuItem {
     border-bottom: 2px solid #414141;
     height: 119px;
-    -webkit-transition-duration: 0.25s;
-    -webkit-animation-timing-function: ease-out;
+    -webkit-transition-duration: 0.15s;
+    -webkit-transition-timing-function: cubic-bezier(0, 0, 8, 8);
+    -webkit-tranform:translateZ(0);
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
     white-space: nowrap;
     color: #FAFAFA;
     background-color: #000000;
