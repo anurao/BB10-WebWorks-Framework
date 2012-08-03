@@ -262,7 +262,6 @@ describe("ui-resources/contextmenu", function () {
 
     xit("can layout the header title correctly when there is no sub header text", function () {
         var headerElement = document.getElementById('contextMenuHeadText');
-
         contextmenu.peekContextMenu(true);
         contextmenu.setHeadText('My Title');
         contextmenu.setSubheadText('');
