@@ -52,7 +52,6 @@ body {
     white-space: nowrap;
     -webkit-box-orient: vertical;
     -webkit-box-pack: center;
-    text-overflow: -blackberry-fade;
 }
 
 .contextMenuHeaderEmpty {
@@ -66,12 +65,16 @@ body {
     height: 60px;
     font-size: 1em;
     color: #fafafa;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
 }
 
 #contextMenuSubheadText {
     height: 60px;
     font-size: 0.75em;
     color: #cecece;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
 }
 
 .peekContextMenu {
