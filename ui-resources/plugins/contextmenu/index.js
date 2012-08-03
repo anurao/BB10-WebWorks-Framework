@@ -205,7 +205,8 @@ contextmenu = {
         var menu = document.getElementById('contextMenu'),
             contextMenuContent = document.getElementById('contextMenuContent'),
             handle = document.getElementById('contextMenuHandle'),
-            elements = document.getElementsByClassName("menuItem");
+            elements = document.getElementsByClassName("menuItem"),
+            i;
 
         menu.removeEventListener('touchend', contextmenu.hideContextMenu, false);
         handle.removeEventListener('touchend', contextmenu.showContextMenu, false);
@@ -213,6 +214,7 @@ contextmenu = {
         menuVisible = false;
         menuPeeked = false;
         menu.className = 'hideMenu';
+
         for (i = 0; i < elements.length; i++) {
             elements[i].className = "menuItem peekItem";
         }

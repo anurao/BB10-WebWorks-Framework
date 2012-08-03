@@ -21,7 +21,6 @@ describe("ui-resources/contextmenu", function () {
     menu,
     menuHandle,
     menuContent,
-    menuItems,
     numberOfMenuItems = 5,
     headText,
     subheadText,

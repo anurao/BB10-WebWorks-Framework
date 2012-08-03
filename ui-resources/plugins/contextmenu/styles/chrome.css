@@ -26,7 +26,6 @@ body {
     -webkit-box-orient: vertical;
     -webkit-box-pack: center;
     z-index: 100;
-    overflow-y:hidden;
 }
 
 #contextMenuContent {
@@ -35,7 +34,6 @@ body {
 }
 
 .contentPeeked {
-    overflow-y:hidden;
     max-height: 67%;
 }
 
@@ -100,7 +98,6 @@ body {
     z-index:101;
 }
 
->>>>>>> Context Menu API Refactor with Enable/Disable
 .peekItem {
     -webkit-transform:translate(0px,0);
     border-image: none;
