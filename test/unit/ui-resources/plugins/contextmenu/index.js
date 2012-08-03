@@ -81,7 +81,7 @@ describe("ui-resources/contextmenu", function () {
                 var returnElements = [],
                     i;
                 if (id === "menuItem") {
-                    for (i = 0; i < 5; i++) {
+                    for (i = 0; i < numberOfMenuItems; i++) {
                         returnElements[i] = {
                             ontouchmove : jasmine.any(Function),
                             className : "menuItem",
@@ -101,7 +101,7 @@ describe("ui-resources/contextmenu", function () {
                         showContextmenu: jasmine.createSpy(),
                         appendChild: jasmine.createSpy(),
                         className: undefined,
-                        style: {overflowY: '', height: ''},
+                        style: {overflowY: '', height: ''}
                     };
                     returnElement = menu;
                 } else if (id === "contextMenuHandle") {
@@ -124,19 +124,10 @@ describe("ui-resources/contextmenu", function () {
                     menuContent = {
                         childNodes: [],
                         appendChild: jasmine.createSpy(),
-                        style: {overflowY: '', height: ''}
+                        style: {overflowY: '', height: ''},
+                        className: ''
                     };
                     returnElement = menuContent;
-                }
-                return returnElement;
-            },
-            getElementsByClassName: function (className) {
-                var returnElement;
-                if (className === 'menuItem') {
-                    menuItems = {
-                        length: numberOfMenuItems
-                    };
-                    returnElement = menuItems;
                 }
                 return returnElement;
             }
@@ -249,7 +240,6 @@ describe("ui-resources/contextmenu", function () {
 
     it("can set the context menu items", function () {
         var itemA = {
-                function: jasmine.createSpy(),
                 imageUrl: 'http://image.com/a.png',
                 name: 'OptionA'
             },
@@ -258,13 +248,13 @@ describe("ui-resources/contextmenu", function () {
         expect(menuContent.appendChild).toHaveBeenCalledWith(jasmine.any(Object));
     });
 
-    it("can set the classname of contextMenuHandle to showMoreActionHandle when less than 7 menu items", function () {
+    it("can set the classname of contextMenuHandle to showMoreActionHandle when more than 7 menu items", function () {
         numberOfMenuItems = 9;
         contextmenu.peekContextMenu(true);
         expect(menuHandle.className).toEqual('showMoreActionsHandle');
     });
 
-    it("can set the classname of contextMenuHandle to showContextMenuHandle when more than 7 menu items", function () {
+    it("can set the classname of contextMenuHandle to showContextMenuHandle when less than 7 menu items", function () {
         numberOfMenuItems = 4;
         contextmenu.peekContextMenu(true);
         expect(menuHandle.className).toEqual('showContextMenuHandle');

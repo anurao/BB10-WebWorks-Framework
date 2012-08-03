@@ -204,7 +204,8 @@ contextmenu = {
 
         var menu = document.getElementById('contextMenu'),
             contextMenuContent = document.getElementById('contextMenuContent'),
-            handle = document.getElementById('contextMenuHandle');
+            handle = document.getElementById('contextMenuHandle'),
+            elements = document.getElementsByClassName("menuItem");
 
         menu.removeEventListener('touchend', contextmenu.hideContextMenu, false);
         handle.removeEventListener('touchend', contextmenu.showContextMenu, false);
@@ -212,6 +213,9 @@ contextmenu = {
         menuVisible = false;
         menuPeeked = false;
         menu.className = 'hideMenu';
+        for (i = 0; i < elements.length; i++) {
+            elements[i].className = "menuItem peekItem";
+        }
 
         // Reset the scrolling of any divs in the menu, since it will save the scroll
         contextMenuContent.scrollTop = 0;
@@ -235,6 +239,9 @@ contextmenu = {
         } else {
             handle.className = 'showContextMenuHandle';
         }
+
+        elements = menuItems;
+        elementsLength = elements.length;
 
         menuVisible = false;
         menuPeeked = true;
