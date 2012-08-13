@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-var MAX_NUM_ITEMS_IN_PEEK_MODE = 7,
+var MAX_NUM_ITEMS_IN_PORTRAIT_PEEK_MODE = 7,
+    MAX_NUM_ITEMS_IN_LANDSCAPE_PEEK_MODE = 3,
+    MAX_NUM_ITEMS_IN_PEEK_MODE = 7,
     PEEK_MODE_TRANSLATE_X = -121,
     FULL_MENU_TRANSLATE_X = -569,
     HIDDEN_MENU_TRANSLATE_X = 0,
@@ -24,30 +26,21 @@ var MAX_NUM_ITEMS_IN_PEEK_MODE = 7,
         VISIBLE: 2,
         DRAGEND: 3
     },
-    menu = document.getElementById('contextMenu'),
-    contextmenu,
+    menu,
     menuCurrentState = state.HIDE,
-    height,     // FIXME: remove this when 186908 fixed
     dragStartPoint,
+    bodyDragStartPoint,
     currentTranslateX,
     touchMoved = false,
+    bodyTouchMoved = false,
     numItems = 0,
     peekModeNumItems = 0,
     headText,
     subheadText,
-    currentContext,
-    config,
-    utils,
-    includePath,
-    elementToExecute,
-    previousIndex,
+    currentPeekIndex,
+    previousPeekIndex,
     elements,
-    elementToExecute,
-    elementsLength;
-
-function requireLocal(id) {
-    return require(!!require.resolve ? "../../" + id.replace(/\/chrome/, "") : id);
-}
+    self;
 
 function getMenuXTranslation() {
     if (menuCurrentState === state.PEEK) {
@@ -59,6 +52,60 @@ function getMenuXTranslation() {
     return HIDDEN_MENU_TRANSLATE_X;
 }
 
+function positionHandle() {
+    var handle = document.getElementById('contextMenuHandle'),
+        top;
+    if (menuCurrentState === state.PEEK) {
+        handle.className = 'showContextMenuHandle';
+        top = (window.screen.availHeight + peekModeNumItems * 121) / 2;
+        handle.style.top = top + 'px';
+    } else if (menuCurrentState === state.VISIBLE) {
+        if (numItems <= MAX_NUM_ITEMS_IN_PEEK_MODE) {
+            handle.className = 'showContextMenuHandle';
+            top = (window.screen.availHeight + numItems * 121) / 2;
+            handle.style.top = top + 'px';
+        } else {
+            handle.className = 'hideContextMenuItem';
+        }
+    }
+}
+
+function bodyTouchStartHandler(evt) {
+    bodyDragStartPoint = evt.touches[0].pageX;
+}
+
+function bodyTouchMoveHandler(evt) {
+    var touch = evt.touches[0],
+        x = window.screen.width + getMenuXTranslation() + touch.pageX - bodyDragStartPoint,
+        menuWidth = -FULL_MENU_TRANSLATE_X;
+    bodyTouchMoved = true;
+    if (menuCurrentState !== state.HIDE) {
+        // Stop translating if the full menu is on the screen
+        if (x >= window.screen.width - menuWidth) {
+            currentTranslateX = getMenuXTranslation() + touch.pageX - bodyDragStartPoint;
+            menu.style.webkitTransform = 'translate(' + currentTranslateX + 'px' + ', 0)';
+        }
+    }
+}
+
+function bodyTouchEndHandler(evt) {
+    if (bodyTouchMoved) {
+        bodyTouchMoved = false;
+        menuCurrentState = state.DRAGEND;
+        if (currentTranslateX > PEEK_MODE_TRANSLATE_X) {
+            self.hideContextMenu();
+        } else if (currentTranslateX < FULL_MENU_TRANSLATE_X / 2) {
+            self.showContextMenu();
+        } else {
+            self.peekContextMenu();
+        }
+        menu.style.webkitTransform = '';
+    }
+    else {
+        self.hideContextMenu();
+    }
+}
+
 function menuTouchStartHandler(evt) {
     menu.style.webkitTransitionDuration = '0s';
     menu.style.overflowX = 'hidden';
@@ -68,10 +115,10 @@ function menuTouchStartHandler(evt) {
 }
 
 function menuTouchMoveHandler(evt) {
+    evt.stopPropagation();
     var touch = evt.touches[0],
         x = window.screen.width + getMenuXTranslation() + touch.pageX - dragStartPoint,
         menuWidth = -FULL_MENU_TRANSLATE_X;
-
     touchMoved = true;
     // Stop translating if the full menu is on the screen
     if (x >= window.screen.width - menuWidth) {
@@ -81,235 +128,243 @@ function menuTouchMoveHandler(evt) {
 }
 
 function menuTouchEndHandler(evt) {
+    evt.stopPropagation();
     if (touchMoved) {
         touchMoved = false;
         menuCurrentState = state.DRAGEND;
         if (currentTranslateX > PEEK_MODE_TRANSLATE_X) {
-            contextmenu.hideContextMenu();
+            self.hideContextMenu();
         } else if (currentTranslateX < FULL_MENU_TRANSLATE_X / 2) {
-            contextmenu.showContextMenu();
+            self.showContextMenu();
         } else {
-            contextmenu.peekContextMenu();
+            self.peekContextMenu();
         }
         menu.style.webkitTransform = '';
     } else {
         if (menuCurrentState === state.PEEK) {
-            contextmenu.showContextMenu();
+            self.showContextMenu();
         } else if (menuCurrentState === state.VISIBLE) {
-            contextmenu.peekContextMenu();
+            self.peekContextMenu();
         }
     }
 }
 
-
-function getNewElementSelection(currentYPosition, elementHeight) {
+function getMenuItemAtPosition(currentYPosition, elementHeight) {
     var screenHeight = window.screen.availHeight,
-        middle = screenHeight / 2,
-        diff = currentYPosition - middle,
-        elementIndex;
-
+        diff = currentYPosition - screenHeight / 2,
+        elementIndex,
+        numOfItems = 0;
+    if (menuCurrentState === state.PEEK) {
+        numOfItems = peekModeNumItems;
+    } else if (menuCurrentState === state.VISIBLE) {
+        numOfItems = numItems;
+    }
     // Base case that we have just a single one, so index that one on touchend
-    if (elementsLength === 1) {
+    if (numOfItems === 1) {
         elementIndex = 0;
-    }
-    else {
-        elementIndex = (elementsLength >> 1) + (diff / elementHeight) | 0;
+    } else {
+        elementIndex = (numOfItems >> 1) + (diff / elementHeight) | 0;
     }
 
-    //Check if the index is greater then the number of elems or less then
+    //Check if the index is greater than the number of elems or less than
     //if so, let's reset the elements and hide all elements
-    if (elementIndex > elementsLength || elementIndex < 0) {
-        previousIndex = null;
-        elementToExecute = null;
-        return;
+    if (elementIndex >= numOfItems || elementIndex < 0) {
+        elementIndex = -1;
     }
+    return elementIndex;
+}
 
-    // Check if we are still on the same element? then return nothing
-    // or if we somehow get an off calculation don't do anything
-    if (previousIndex === elementIndex) {
-        return;
+function highlightMenuItem(item) {
+    if (menuCurrentState === state.PEEK) {
+        item.className = 'contextmenuItem showContextmenuItem';
+        item.active = true;
+    } else if (menuCurrentState === state.VISIBLE) {
+        item.className = 'contextmenuItem fullContextmenuItem';
+        item.active = true;
     }
-
-    // Else continue and set our values for next time
-    // while returning the new element to be shown
-    previousIndex = elementIndex;
-    elementToExecute = elements[elementIndex];
-    return elementToExecute;
 }
 
 function menuItemTouchStartHandler(evt) {
     evt.stopPropagation();
-    if (menuCurrentState === state.PEEK) {
-        evt.currentTarget.className = 'menuItem showItem';
+    highlightMenuItem(evt.currentTarget);
+    previousPeekIndex = currentPeekIndex = evt.currentTarget.index;
+}
+
+function menuItemTouchMoveHandler(evt) {
+    evt.stopPropagation();
+    var currentYPosition = evt.touches[0].clientY,
+        elementHeight = evt.currentTarget.clientHeight + 2; // border = 2
+    currentPeekIndex = getMenuItemAtPosition(currentYPosition, elementHeight);
+    if (currentPeekIndex === previousPeekIndex) {
+        return;
+    }
+    if (currentPeekIndex === -1) {
+        if (elements[previousPeekIndex].active) {
+            elements[previousPeekIndex].className = 'contextmenuItem';
+            elements[previousPeekIndex].active = false;
+        }
+    } else if (previousPeekIndex === -1) {
+        highlightMenuItem(elements[currentPeekIndex]);
     } else {
-        evt.currentTarget.className = 'menuItem highlightItem';
+        if (elements[previousPeekIndex].active) {
+            elements[previousPeekIndex].className = 'contextmenuItem';
+            elements[previousPeekIndex].active = false;
+        }
+        highlightMenuItem(elements[currentPeekIndex]);
     }
-    elementToExecute = evt.currentTarget;
-    getNewElementSelection(evt.touches[0].clientY, evt.currentTarget.clientHeight);
+    previousPeekIndex = currentPeekIndex;
 }
 
-function menuItemTouchMoveHandler(touchEvent) {
-    touchEvent.stopPropagation();
-
-    var currentYPosition = touchEvent.touches[0].clientY,
-        elementHeight = touchEvent.currentTarget.clientHeight,
-        elementToShow,
-        previousToHideIndex = previousIndex;
-
-    //Base on our current Y position let's calculate which
-    // element this touch point belongs to
-    elementToShow = getNewElementSelection(currentYPosition, elementHeight);
-
-    if (elementToShow) {
-        if ((typeof previousToHideIndex !== "undefined") && elements[previousToHideIndex]) {
-            elements[previousToHideIndex].className = "menuItem peekItem";
-        }
-        if (menuCurrentState === state.PEEK) {
-            elementToShow.className = 'menuItem showItem';
-        } else if (menuCurrentState === state.VISIBLE) {
-            elementToShow.className = 'menuItem highlightItem';
-        }
-    } else if (!elementToExecute) {
-        if ((typeof previousIndex !== 'undefined') && elements[previousIndex]) {
-            elements[previousIndex].className = 'menuItem peekItem';
-            previousIndex = null;
-        }
+function menuItemTouchEndHandler(evt) {
+    evt.stopPropagation();
+    if (currentPeekIndex !== -1) {
+        var element = elements[currentPeekIndex];
+        element.className = 'contextmenuItem';
+        element.active = false;
+        window.qnx.webplatform.getController().remoteExec(1, 'executeMenuAction', [element.attributes.actionId.value]);
+        self.hideContextMenu();
     }
 }
 
-function menuItemTouchEndActionInvoker(actionId, menuItem) {
-    if (menuItem) {
-        menuItem.className = 'menuItem peekItem';
-    }
-    if (elementToExecute) {
-        window.qnx.webplatform.getController().remoteExec(1, 'executeMenuAction', [elementToExecute.attributes.actionId.value]);
+function rotationHandler() {
+    if (window.orientation === 0 || window.orientation === 180) {
+        MAX_NUM_ITEMS_IN_PEEK_MODE = MAX_NUM_ITEMS_IN_PORTRAIT_PEEK_MODE;
     } else {
-        window.qnx.webplatform.getController().remoteExec(1, 'executeMenuAction', [actionId]);
+        MAX_NUM_ITEMS_IN_PEEK_MODE = MAX_NUM_ITEMS_IN_LANDSCAPE_PEEK_MODE;
     }
-
-    contextmenu.hideContextMenu();
-
-    elementToExecute = null;
-    previousIndex = null;
+    self.hideContextMenu();
 }
 
-function menuItemTouchEndHandler(touchEvent) {
-    touchEvent.stopPropagation();
+function handleMouseDown(evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+}
+
+function setHeadText(text) {
+    var headText = document.getElementById('contextMenuHeadText');
+    headText.innerText = text;
+    if (text) {
+        headText.style.height = '60px';
+    } else {
+        headText.style.height = '0px';
+    }
+}
+
+function setSubheadText(text) {
+    var subheadText = document.getElementById('contextMenuSubheadText');
+    subheadText.innerText = text;
+    if (text) {
+        subheadText.style.height = '60px';
+    } else {
+        subheadText.style.height = '0px';
+    }
 }
 
 function init() {
-    config = requireLocal("../chrome/lib/config.js");
-    utils = requireLocal("../chrome/lib/utils");
-
-    menu.addEventListener('webkitTransitionEnd', contextmenu.transitionEnd.bind(contextmenu));
+    menu = document.getElementById('contextMenu');
+    menu.addEventListener('webkitTransitionEnd', self.transitionEnd.bind(self));
     menu.addEventListener('touchstart', menuTouchStartHandler);
     menu.addEventListener('touchmove', menuTouchMoveHandler);
     menu.addEventListener('touchend', menuTouchEndHandler);
+    window.document.body.addEventListener('touchstart', bodyTouchStartHandler);
+    window.document.body.addEventListener('touchmove', bodyTouchMoveHandler);
+    window.document.body.addEventListener('touchend', bodyTouchEndHandler);
+    setHeadText('');
+    setSubheadText('');
+    rotationHandler();
+    window.addEventListener('orientationchange', rotationHandler, false);
 }
 
-contextmenu = {
+self = {
     init: init,
     setMenuOptions: function (options) {
         var menuContent = document.getElementById("contextMenuContent"),
-            header,
             menuItem,
             menuImage,
-            i;
-
-        while (menuContent.childNodes.length >= 1) {
-            menuContent.removeChild(menu.firstChild);
-        }
-        contextmenu.setHeadText('');
-        contextmenu.setSubheadText('');
+            i,
+            option;
 
         for (i = 0; i < options.length; i++) {
-            if (options[i].headText || options[i].subheadText) {
-                header = document.getElementById('contextMenuHeader');
-                header.className = 'contextMenuHeader';
-                if (options[i].headText) {
-                    contextmenu.setHeadText(options[i].headText);
+            option = options[i];
+            if (option.headText || option.subheadText) {
+                if (option.headText) {
+                    headText = option.headText;
                 }
-                if (options[i].subheadText) {
-                    contextmenu.setSubheadText(options[i].subheadText);
+                if (option.subheadText) {
+                    subheadText = option.subheadText;
                 }
-            } else {
-                menuItem = document.createElement('div');
-                
-                menuImage = document.createElement('img');
-                menuImage.src = options[i].imageUrl ? options[i].imageUrl : 'assets/generic_81_81_placeholder.png';
-               
-                menuItem.appendChild(menuImage);
-                menuItem.appendChild(document.createTextNode(options[i].label));
-                menuItem.setAttribute("class", "menuItem");
-                menuItem.setAttribute("actionId", options[i].actionId);
-                menuItem.addEventListener('mousedown', contextmenu.handleMouseDown, false);
-                menuItem.addEventListener('touchstart', menuItemTouchStartHandler);
-                menuItem.addEventListener('touchmove', menuItemTouchMoveHandler);
-                menuItem.addEventListener('touchend', menuItemTouchEndHandler);
-                menuItem.ontouchend = menuItemTouchEndActionInvoker.bind(this, options[i].actionId, menuItem);
-
-                menu.appendChild(menuItem);
-                numItems++;
+                continue;
             }
-        }
-    },
+            menuItem = document.createElement('div');
 
-    handleMouseDown: function (evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
-    },
-
-    setHeadText: function (text) {
-        var headText = document.getElementById('contextMenuHeadText');
-        headText.innerText = text;
-        if (text) {
-            headText.style.height = '60px';
-        } else {
-            headText.style.height = '0px';
-        }
-    },
-
-    setSubheadText: function (text) {
-        var subheadText = document.getElementById('contextMenuSubheadText');
-        subheadText.innerText = text;
-        if (text) {
-            subheadText.style.height = '60px';
-        } else {
-            subheadText.style.height = '0px';
+            menuImage = document.createElement('img');
+            menuImage.src = option.imageUrl ? option.imageUrl : 'assets/generic_81_81_placeholder.png';
+            menuItem.appendChild(menuImage);
+            menuItem.appendChild(document.createTextNode(option.label));
+            menuItem.setAttribute("class", "contextmenuItem");
+            if (numItems >= MAX_NUM_ITEMS_IN_PEEK_MODE) {
+                menuItem.setAttribute('class', 'hideContextMenuItem');
+            }
+            menuItem.setAttribute("actionId", option.actionId);
+            menuItem.index = numItems;
+            menuItem.active = false;
+            menuItem.addEventListener('mousedown', handleMouseDown, false);
+            menuItem.addEventListener('touchstart', menuItemTouchStartHandler);
+            menuItem.addEventListener('touchmove', menuItemTouchMoveHandler);
+            menuItem.addEventListener('touchend', menuItemTouchEndHandler);
+            menuContent.appendChild(menuItem);
+            numItems++;
         }
     },
 
     showContextMenu: function (evt) {
+        var i,
+            header,
+            menuContent,
+            item;
+
         if (menuCurrentState === state.VISIBLE) {
             return;
         }
-
-        var menuContent = document.getElementById('contextMenuContent'),
-            handle = document.getElementById('contextMenuHandle'),
-            i;
-
-
-        menu.className = 'showMenu';
-        menuContent.className = 'contentShown';
-        handle.className = 'showContextMenuHandle';
+        menu.style.webkitTransitionDuration = '0.25s';
+        menu.className = 'showContextMenu';
+        document.getElementById('contextMenuContent').className = 'contentShown';
+        document.getElementById('contextMenuHandle').className = 'showContextMenuHandle';
 
         if (evt) {
             evt.preventDefault();
             evt.stopPropagation();
         }
-
-        if (menuCurrentState === state.PEEKED) {
-            evt.cancelBubble = true;
+        // Show header
+        if (headText || subheadText) {
+            header = document.getElementById('contextMenuHeader');
+            header.className = 'contextMenuHeader';
+            if (headText) {
+                setHeadText(headText);
+            }
+            if (subheadText) {
+                setSubheadText(subheadText);
+            }
+            // Move content so that menu items won't be covered by header
+            if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
+                menuContent = document.getElementById('contextMenuContent');
+                menuContent.style.position = 'absolute';
+                menuContent.style.top = '131px';
+            }
         }
-
-        // reset the event listeners since we are now shown, and do not
-        // want to continue unfolding the menu
-        for (i = 0; i < elements.length; i++) {
-            elements[i].ontouchmove = null;
+        // Show all menu items
+        if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
+            item = document.getElementById('contextMenuContent').firstChild;
+            for (i = 1; i < numItems; i++) {
+                item = item.nextSibling;
+                if (i < MAX_NUM_ITEMS_IN_PEEK_MODE) {
+                    continue;
+                }
+                item.className = 'contextmenuItem';
+            }
         }
-
         menuCurrentState = state.VISIBLE;
-
+        positionHandle();
     },
 
     isMenuVisible: function () {
@@ -320,91 +375,86 @@ contextmenu = {
         if (menuCurrentState === state.HIDE) {
             return;
         }
-
-        var contextMenuContent = document.getElementById('contextMenuContent'),
-            handle = document.getElementById('contextMenuHandle'),
-            elements = document.getElementsByClassName("menuItem"),
-            i;
-
         numItems = 0;
-
-        menu.removeEventListener('touchend', contextmenu.hideContextMenu, false);
-        handle.removeEventListener('touchend', contextmenu.showContextMenu, false);
-
+        menu.style.webkitTransitionDuration = '0.25s';
         menu.className = 'hideMenu';
-        window.qnx.webplatform.getController().remoteExec(1, 'webview.notifyContextMenuCancelled');
+        var menuContent = document.getElementById('contextMenuContent');
+        while (menuContent.firstChild) {
+            menuContent.removeChild(menuContent.firstChild);
+        }
+        menuContent.style.position = '';
+        menuContent.style.top = '';
 
+        window.qnx.webplatform.getController().remoteExec(1, 'webview.notifyContextMenuCancelled');
         if (evt) {
             evt.preventDefault();
             evt.stopPropagation();
         }
-
-        for (i = 0; i < elements.length; i++) {
-            elements[i].className = "menuItem";
-        }
-
-        // Reset the scrolling of any divs in the menu, since it will save the scroll
-        contextMenuContent.scrollTop = 0;
-
+        menuCurrentState = state.HIDE;
         // Reset sensitivity
         window.qnx.webplatform.getController().remoteExec(1, 'webview.setSensitivity', ['SensitivityTest']);
-
-        menuCurrentState = state.HIDE;
     },
 
     peekContextMenu: function (show, zIndex) {
         if (menuCurrentState === state.PEEK) {
             return;
         }
-
-        var handle = document.getElementById('contextMenuHandle'),
-            menuContent = document.getElementById('contextMenuContent'),
-            menuItems = document.getElementsByClassName('menuItem');
-
-        if (menuItems.length > 7) {
-            handle.className = 'showMoreActionsHandle';
-        } else {
-            handle.className = 'showContextMenuHandle';
-        }
-
         peekModeNumItems = numItems > MAX_NUM_ITEMS_IN_PEEK_MODE ? MAX_NUM_ITEMS_IN_PEEK_MODE : numItems;
-        // Cache items for single item peek mode.
         elements = document.getElementsByClassName("contextmenuItem");
+        var menuContent = document.getElementById('contextMenuContent'),
+            item,
+            i,
+            header;
+
+        // Cache items for single item peek mode.
         window.qnx.webplatform.getController().remoteExec(1, 'webview.setSensitivity', ['SensitivityAlways']);
-
-        elements = menuItems;
-        elementsLength = elements.length;
-
-        menuContent.className = 'contentPeeked';
+        menu.style.webkitTransitionDuration = '0.25s';
         menu.className = 'peekContextMenu';
-
+        document.getElementById('contextMenuHandle').className = 'showContextMenuHandle';
+        if ((menuCurrentState === state.DRAGEND || menuCurrentState === state.VISIBLE)) {
+            // Hide some items if numItems > MAX_NUM_ITEMS_IN_PEEK_MODE
+            if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
+                item = document.getElementById('contextMenuContent').firstChild;
+                for (i = 1; i < numItems; i++) {
+                    item = item.nextSibling;
+                    if (i < MAX_NUM_ITEMS_IN_PEEK_MODE) {
+                        continue;
+                    }
+                    item.className = 'hideContextMenuItem';
+                }
+            }
+            // Hide header
+            if (headText || subheadText) {
+                header = document.getElementById('contextMenuHeader');
+                header.className = '';
+                if (headText) {
+                    setHeadText('');
+                }
+                if (subheadText) {
+                    setSubheadText('');
+                }
+                if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
+                    menuContent.style.position = '';
+                    menuContent.style.top = '';
+                }
+            }
+        }
         // This is for single item peek mode
         menu.style.overflowX = 'visible';
         menu.style.overflowY = 'visible';
 
         menuCurrentState = state.PEEK;
+        positionHandle();
     },
 
     transitionEnd: function () {
-        var handle = document.getElementById('contextMenuHandle'),
-            header;
-        if (menuCurrentState === state.VISIBLE) {
-            menu.addEventListener('touchend', contextmenu.hideContextMenu, false);
-            handle.removeEventListener('touchend', contextmenu.showContextMenu, false);
-        } else if (menuCurrentState === state.PEEKED) {
-            handle.addEventListener('touchend', contextmenu.showContextMenu, false);
-            menu.addEventListener('touchend', contextmenu.hideContextMenu, false);
-        } else {
-            header = document.getElementById('contextMenuHeader');
-            header.className = 'contextMenuHeaderEmpty';
-            contextmenu.setHeadText('');
-            contextmenu.setSubheadText('');
+        if (menuCurrentState === state.HIDE) {
+            setHeadText('');
+            setSubheadText('');
+            headText = '';
+            subheadText = '';
         }
-    },
-
-    setCurrentContext: function (context) {
-        currentContext = context;
     }
 };
 
-module.exports = contextmenu;
+module.exports = self;
