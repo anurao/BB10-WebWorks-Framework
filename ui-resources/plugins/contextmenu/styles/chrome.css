@@ -41,27 +41,30 @@ body {
     position: absolute;
     top: 0;
     height: 120px;
-    width: 100%;
+    width: 95%;
     background-color: #292929;
     white-space: nowrap;
     -webkit-box-orient: vertical;
     -webkit-box-pack: center;
     padding-top: 15px;
     padding-left: 20px;
-    text-overflow: -blackberry-fade;
     -webkit-transition: height 0.05s ease-in-out;
 }
 
 #contextMenuHeadText {
     height: 60px;
-    font-size: 1em;
+    font-size: 2.5em;
     color: #fafafa;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
 }
 
 #contextMenuSubheadText {
     height: 60px;
-    font-size: 0.75em;
+    font-size: 1.9em;
     color: #cecece;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
 }
 
 .peekContextMenu {

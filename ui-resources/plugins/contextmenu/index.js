@@ -329,6 +329,7 @@ self = {
             evt.preventDefault();
             evt.stopPropagation();
         }
+
         // Show header
         if (headText || subheadText) {
             header = document.getElementById('contextMenuHeader');
@@ -346,6 +347,7 @@ self = {
                 menuContent.style.top = '131px';
             }
         }
+        
         // Show all menu items
         if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
             item = document.getElementById('contextMenuContent').firstChild;
@@ -372,6 +374,14 @@ self = {
         numItems = 0;
         menu.style.webkitTransitionDuration = '0.25s';
         menu.className = 'hideMenu';
+
+        menu.removeEventListener('touchstart', menuTouchStartHandler, false);
+        menu.removeEventListener('touchmove', menuTouchMoveHandler, false);
+        menu.removeEventListener('touchend', menuTouchEndHandler, false);
+
+        window.document.body.removeEventListener('touchstart', bodyTouchStartHandler, false);
+        window.document.body.removeEventListener('touchmove', bodyTouchMoveHandler, false);
+        window.document.body.removeEventListener('touchend', bodyTouchEndHandler, false);
 
         var menuContent = document.getElementById('contextMenuContent');
         while (menuContent.firstChild) {
