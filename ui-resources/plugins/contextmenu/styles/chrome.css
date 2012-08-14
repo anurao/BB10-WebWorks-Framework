@@ -25,12 +25,16 @@ body {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-box-pack: center;
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
     z-index: 100;
 }
 
 #contextMenuContent {
-    font-size: 1.35em;
+    font-size: 3.4em;
     color: #fafafa;
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
 }
 
 .contextMenuHeader {
@@ -99,13 +103,13 @@ body {
 }
 
 .showContextmenuItem {
-    -webkit-transform:translate(-462px,0);
+    -webkit-transform: translateZ(0) translate(-462px,0);
     border-image: url('../assets/core_crosscutmenu_selected.png') 2 1 2 13 / 1 1 1 1;
     z-index:101;
 }
 
 .peekItem {
-    -webkit-transform: translate(0, 0);
+    -webkit-transform: translateZ(0) translate(0, 0);
     border-image: none;
 }
 

@@ -85,6 +85,8 @@ function menuDragMove(pageX) {
 }
 
 function menuDragEnd() {
+    menu.style.webkitTransitionDuration = '0.25s';
+
     menuCurrentState = state.DRAGEND;
     if (currentTranslateX > PEEK_MODE_TRANSLATE_X) {
         self.hideContextMenu();
@@ -93,6 +95,7 @@ function menuDragEnd() {
     } else {
         self.peekContextMenu();
     }
+    
     menu.style.webkitTransform = '';
 }
 
@@ -259,9 +262,6 @@ function init() {
     menu.addEventListener('touchstart', menuTouchStartHandler);
     menu.addEventListener('touchmove', menuTouchMoveHandler);
     menu.addEventListener('touchend', menuTouchEndHandler);
-    window.document.body.addEventListener('touchstart', bodyTouchStartHandler);
-    window.document.body.addEventListener('touchmove', bodyTouchMoveHandler);
-    window.document.body.addEventListener('touchend', bodyTouchEndHandler);
     setHeadText('');
     setSubheadText('');
     rotationHandler();
@@ -441,6 +441,10 @@ self = {
         // This is for single item peek mode
         menu.style.overflowX = 'visible';
         menu.style.overflowY = 'visible';
+
+        window.document.body.addEventListener('touchstart', bodyTouchStartHandler);
+        window.document.body.addEventListener('touchmove', bodyTouchMoveHandler);
+        window.document.body.addEventListener('touchend', bodyTouchEndHandler);
 
         menuCurrentState = state.PEEK;
         positionHandle();
