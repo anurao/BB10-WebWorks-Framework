@@ -270,6 +270,7 @@ function init() {
 
 self = {
     init: init,
+    handleMouseDown: handleMouseDown,
     setMenuOptions: function (options) {
         var menuContent = document.getElementById("contextMenuContent"),
             menuItem,
@@ -371,6 +372,11 @@ self = {
         numItems = 0;
         menu.style.webkitTransitionDuration = '0.25s';
         menu.className = 'hideMenu';
+
+        // Revise: Should we even bother removing the listeners if we are deleting the 
+        menu.removeEventListener('touchend', self.hideContextMenu, false);
+        document.getElementById('contextMenuHandle').removeEventListener('touchend', self.showContextMenu, false);
+
         var menuContent = document.getElementById('contextMenuContent');
         while (menuContent.firstChild) {
             menuContent.removeChild(menuContent.firstChild);
@@ -388,6 +394,10 @@ self = {
         window.qnx.webplatform.getController().remoteExec(1, 'webview.setSensitivity', ['SensitivityTest']);
     },
 
+    setHeadText: setHeadText,
+
+    setSubheadText: setSubheadText,
+
     peekContextMenu: function (show, zIndex) {
         if (menuCurrentState === state.PEEK) {
             return;
@@ -400,7 +410,7 @@ self = {
             header;
 
         // Cache items for single item peek mode.
-        window.qnx.webplatform.getController().remoteExec(1, 'webview.setSensitivity', ['SensitivityAlways']);
+        window.qnx.webplatform.getController().remoteExec(1, 'webview.setSensitivity', ['SensitivityNoFocus']);
         menu.style.webkitTransitionDuration = '0.25s';
         menu.className = 'peekContextMenu';
         document.getElementById('contextMenuHandle').className = 'showContextMenuHandle';
@@ -442,8 +452,8 @@ self = {
 
     transitionEnd: function () {
         if (menuCurrentState === state.HIDE) {
-            setHeadText('');
-            setSubheadText('');
+            self.setHeadText('');
+            self.setSubheadText('');
             headText = '';
             subheadText = '';
         }

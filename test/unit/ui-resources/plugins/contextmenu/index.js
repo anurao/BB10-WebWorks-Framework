@@ -66,7 +66,11 @@ describe("ui-resources/contextmenu", function () {
 
             screen : {
                 avalHeight : "1280"
-            }
+            },
+
+            document: GLOBAL.document,
+
+            addEventListener: jasmine.createSpy()
         };
         GLOBAL.document = {
             createTextNode: jasmine.createSpy(),
@@ -75,6 +79,9 @@ describe("ui-resources/contextmenu", function () {
                 setAttribute: jasmine.createSpy(),
                 addEventListener: jasmine.createSpy()
             }),
+            body: {
+                addEventListener: jasmine.createSpy()
+            },
 
             getElementsByClassName: function (id) {
                 var returnElements = [],
@@ -107,14 +114,15 @@ describe("ui-resources/contextmenu", function () {
                     menuHandle = {
                         addEventListener: jasmine.createSpy(),
                         removeEventListener: jasmine.createSpy(),
-                        className: ''
+                        className: '',
+                        style: {}
                     };
                     returnElement = menuHandle;
                 } else if (id === "contextMenuHeadText") {
-                    headText = { innerText: undefined };
+                    headText = { innerText: undefined, style: {} };
                     returnElement = headText;
                 } else if (id === "contextMenuSubheadText") {
-                    subheadText = { innerText: undefined };
+                    subheadText = { innerText: undefined, style: {}};
                     returnElement = subheadText;
                 } else if (id === "contextMenuHeader") {
                     header = { className: undefined };
@@ -159,10 +167,14 @@ describe("ui-resources/contextmenu", function () {
     });
 
     it("has a handleMouseDown function that accepts an event", function () {
-        var spyFunction = jasmine.createSpy(),
-            evt = { preventDefault : spyFunction };
+        var evt = { 
+            preventDefault : jasmine.createSpy(),
+            stopPropagation: jasmine.createSpy()
+        };
+
         contextmenu.handleMouseDown(evt);
         expect(evt.preventDefault).toHaveBeenCalled();
+        expect(evt.stopPropagation).toHaveBeenCalled();
     });
 
     it("has a showContextMenu function", function () {
@@ -171,7 +183,9 @@ describe("ui-resources/contextmenu", function () {
 
     it("allows showContextMenu to set menuVisible to true", function () {
         var evt = {
-            cancelBubble : false
+            cancelBubble : false,
+            preventDefault: jasmine.createSpy(),
+            stopPropagation: jasmine.createSpy()
         };
         contextmenu.hideContextMenu();
         contextmenu.peekContextMenu(true);
@@ -181,15 +195,14 @@ describe("ui-resources/contextmenu", function () {
 
     it("allows showContextMenu to set peeked mode to false when already peeked", function () {
         var evt = {
-            cancelBubble : false
+            preventDefault: jasmine.createSpy(),
+            stopPropagation: jasmine.createSpy()
         };
         contextmenu.hideContextMenu();
         contextmenu.peekContextMenu(true);
         contextmenu.showContextMenu(evt);
-        expect(evt.cancelBubble).toEqual(true);
         expect(contextmenu.isMenuVisible()).toEqual(true);
     });
-
 
     it("can set the header text of the context menu", function () {
         var text = "So Awesome Header";
@@ -216,17 +229,10 @@ describe("ui-resources/contextmenu", function () {
     it("can set transitionEnd logic when the context menu is hidden", function () {
         spyOn(contextmenu, 'setHeadText');
         spyOn(contextmenu, 'setSubheadText');
+        contextmenu.hideContextMenu();
         contextmenu.transitionEnd();
-        expect(header.className).toEqual('contextMenuHeaderEmpty');
         expect(contextmenu.setHeadText).toHaveBeenCalledWith('');
         expect(contextmenu.setSubheadText).toHaveBeenCalledWith('');
-    });
-
-    it("can set transitionEnd logic when the context menu is peeked", function () {
-        contextmenu.peekContextMenu(true);
-        contextmenu.transitionEnd();
-        expect(menu.addEventListener).toHaveBeenCalledWith('touchend', contextmenu.hideContextMenu, false);
-        expect(menuHandle.addEventListener).toHaveBeenCalledWith('touchend', contextmenu.showContextMenu, false);
     });
 
     it("can peek the context menu", function () {
@@ -245,12 +251,6 @@ describe("ui-resources/contextmenu", function () {
             options = [itemA];
         contextmenu.setMenuOptions(options);
         expect(menuContent.appendChild).toHaveBeenCalledWith(jasmine.any(Object));
-    });
-
-    it("can set the classname of contextMenuHandle to showMoreActionHandle when more than 7 menu items", function () {
-        numberOfMenuItems = 9;
-        contextmenu.peekContextMenu(true);
-        expect(menuHandle.className).toEqual('showMoreActionsHandle');
     });
 
     it("can set the classname of contextMenuHandle to showContextMenuHandle when less than 7 menu items", function () {
