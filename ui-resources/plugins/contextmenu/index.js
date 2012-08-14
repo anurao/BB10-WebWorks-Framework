@@ -29,10 +29,8 @@ var MAX_NUM_ITEMS_IN_PORTRAIT_PEEK_MODE = 7,
     menu,
     menuCurrentState = state.HIDE,
     dragStartPoint,
-    bodyDragStartPoint,
     currentTranslateX,
     touchMoved = false,
-    bodyTouchMoved = false,
     numItems = 0,
     peekModeNumItems = 0,
     headText,
@@ -70,82 +68,77 @@ function positionHandle() {
     }
 }
 
-function bodyTouchStartHandler(evt) {
-    bodyDragStartPoint = evt.touches[0].pageX;
-}
-
-function bodyTouchMoveHandler(evt) {
-    var touch = evt.touches[0],
-        x = window.screen.width + getMenuXTranslation() + touch.pageX - bodyDragStartPoint,
-        menuWidth = -FULL_MENU_TRANSLATE_X;
-    bodyTouchMoved = true;
-    if (menuCurrentState !== state.HIDE) {
-        // Stop translating if the full menu is on the screen
-        if (x >= window.screen.width - menuWidth) {
-            currentTranslateX = getMenuXTranslation() + touch.pageX - bodyDragStartPoint;
-            menu.style.webkitTransform = 'translate(' + currentTranslateX + 'px' + ', 0)';
-        }
-    }
-}
-
-function bodyTouchEndHandler(evt) {
-    if (bodyTouchMoved) {
-        bodyTouchMoved = false;
-        menuCurrentState = state.DRAGEND;
-        if (currentTranslateX > PEEK_MODE_TRANSLATE_X) {
-            self.hideContextMenu();
-        } else if (currentTranslateX < FULL_MENU_TRANSLATE_X / 2) {
-            self.showContextMenu();
-        } else {
-            self.peekContextMenu();
-        }
-        menu.style.webkitTransform = '';
-    }
-    else {
-        self.hideContextMenu();
-    }
-}
-
-function menuTouchStartHandler(evt) {
+function menuDragStart() {
     menu.style.webkitTransitionDuration = '0s';
     menu.style.overflowX = 'hidden';
     menu.style.overflowY = 'scroll';
-    dragStartPoint = evt.touches[0].pageX;
+}
+
+function menuDragMove(pageX) {
+    var x = window.screen.width + getMenuXTranslation() + pageX - dragStartPoint,
+        menuWidth = -FULL_MENU_TRANSLATE_X;
+    // Stop translating if the full menu is on the screen
+    if (x >= window.screen.width - menuWidth) {
+        currentTranslateX = getMenuXTranslation() + pageX - dragStartPoint;
+        menu.style.webkitTransform = 'translate(' + currentTranslateX + 'px' + ', 0)';
+    }
+}
+
+function menuDragEnd() {
+    menuCurrentState = state.DRAGEND;
+    if (currentTranslateX > PEEK_MODE_TRANSLATE_X) {
+        self.hideContextMenu();
+    } else if (currentTranslateX < FULL_MENU_TRANSLATE_X / 2) {
+        self.showContextMenu();
+    } else {
+        self.peekContextMenu();
+    }
+    menu.style.webkitTransform = '';
+}
+
+function menuTouchStartHandler(evt) {
     evt.stopPropagation();
+    menuDragStart();
+    dragStartPoint = evt.touches[0].pageX;
+}
+
+function bodyTouchStartHandler(evt) {
+    dragStartPoint = evt.touches[0].pageX;
+    menuDragStart();
 }
 
 function menuTouchMoveHandler(evt) {
     evt.stopPropagation();
-    var touch = evt.touches[0],
-        x = window.screen.width + getMenuXTranslation() + touch.pageX - dragStartPoint,
-        menuWidth = -FULL_MENU_TRANSLATE_X;
     touchMoved = true;
-    // Stop translating if the full menu is on the screen
-    if (x >= window.screen.width - menuWidth) {
-        currentTranslateX = getMenuXTranslation() + touch.pageX - dragStartPoint;
-        menu.style.webkitTransform = 'translate(' + currentTranslateX + 'px' + ', 0)';
-    }
+    menuDragMove(evt.touches[0].pageX);
+}
+
+function bodyTouchMoveHandler(evt) {
+    touchMoved = true;
+    menuDragMove(evt.touches[0].pageX);
 }
 
 function menuTouchEndHandler(evt) {
     evt.stopPropagation();
     if (touchMoved) {
         touchMoved = false;
-        menuCurrentState = state.DRAGEND;
-        if (currentTranslateX > PEEK_MODE_TRANSLATE_X) {
-            self.hideContextMenu();
-        } else if (currentTranslateX < FULL_MENU_TRANSLATE_X / 2) {
-            self.showContextMenu();
-        } else {
-            self.peekContextMenu();
-        }
-        menu.style.webkitTransform = '';
+        menuDragEnd();
     } else {
         if (menuCurrentState === state.PEEK) {
             self.showContextMenu();
         } else if (menuCurrentState === state.VISIBLE) {
             self.peekContextMenu();
         }
+    }
+}
+
+function bodyTouchEndHandler(evt) {
+    if (touchMoved) {
+        touchMoved = false;
+        menuDragEnd();
+    }
+    else {
+        self.hideContextMenu();
     }
 }
 
