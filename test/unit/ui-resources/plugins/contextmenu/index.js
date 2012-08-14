@@ -219,8 +219,6 @@ describe("ui-resources/contextmenu", function () {
     it("can hide the context menu", function () {
         contextmenu.showContextMenu();
         contextmenu.hideContextMenu();
-        expect(menu.removeEventListener).toHaveBeenCalledWith('touchend', contextmenu.hideContextMenu, false);
-        expect(menuHandle.removeEventListener).toHaveBeenCalledWith('touchend', contextmenu.showContextMenu, false);
         expect(contextmenu.isMenuVisible()).toEqual(false);
         expect(menu.className).toEqual('hideMenu');
         expect(mockedController.remoteExec).toHaveBeenCalledWith(1, 'webview.setSensitivity', ['SensitivityTest']);
@@ -237,7 +235,7 @@ describe("ui-resources/contextmenu", function () {
 
     it("can peek the context menu", function () {
         contextmenu.peekContextMenu(true);
-        expect(mockedController.remoteExec).toHaveBeenCalledWith(1, 'webview.setSensitivity', ['SensitivityNoFocus']);
+        expect(mockedController.remoteExec).toHaveBeenCalledWith(1, 'webview.setSensitivity', ['SensitivityAlways']);
         expect(menuHandle.className).toEqual('showContextMenuHandle');
         expect(contextmenu.isMenuVisible()).toEqual(true);
         expect(menu.className).toEqual('peekContextMenu');
