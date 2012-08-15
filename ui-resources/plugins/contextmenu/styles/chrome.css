@@ -30,16 +30,9 @@ body {
     z-index: 100;
 }
 
-#contextMenuContent {
-    font-size: 3.4em;
-    color: #fafafa;
-    -webkit-backface-visibility: hidden;
-    -webkit-perspective: 1000;
-}
-
-.contextMenuHeader {
+#contextMenuHeader {
     position: absolute;
-    top: 0;
+    top: -138px;
     height: 120px;
     width: 95%;
     background-color: #292929;
@@ -48,7 +41,21 @@ body {
     -webkit-box-pack: center;
     padding-top: 15px;
     padding-left: 20px;
-    -webkit-transition: height 0.05s ease-in-out;
+    -webkit-transition: 0.25s;
+    -webkit-animation-timing-function: ease-out;
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
+}
+
+#contextMenuContent {
+    font-size: 3.4em;
+    color: #fafafa;
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
+}
+
+.showMenuHeader { 
+    -webkit-transform: translate(0, 138px);   
 }
 
 #contextMenuHeadText {
@@ -80,6 +87,14 @@ body {
     height: 119px;
     width: 121px;
     background-image: url('../assets/drag_bar.png');
+}
+
+.showMoreHandleIcon {
+    height: 81px;
+    width: 81px;
+    position: absolute;
+    top: 20px;
+    left: 40px;
 }
 
 .hideContextMenuItem {

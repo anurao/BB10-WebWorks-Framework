@@ -52,11 +52,26 @@ function getMenuXTranslation() {
 
 function positionHandle() {
     var handle = document.getElementById('contextMenuHandle'),
-        top;
+        top,
+        moreIcon = document.getElementById('moreHandleIcon');
+
     if (menuCurrentState === state.PEEK) {
         handle.className = 'showContextMenuHandle';
         top = (window.screen.availHeight + peekModeNumItems * 121) / 2;
         handle.style.top = top + 'px';
+
+        // If have more options than the limit, show the more dots on the handle
+        if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE && moreIcon == null) {
+            moreIcon = document.createElement('img');
+            moreIcon.id = "moreHandleIcon";
+            moreIcon.style = 'showMoreHandleIcon';
+            moreIcon.src = 'assets/ActionOverflowMenu.png';
+            moreIcon.className = 'showMoreHandleIcon';
+            handle.appendChild(moreIcon);
+        } else if (numItems < MAX_NUM_ITEMS_IN_PEEK_MODE && moreIcon != null) {
+            handle.removeChild(moreIcon);
+        }
+
     } else if (menuCurrentState === state.VISIBLE) {
         if (numItems <= MAX_NUM_ITEMS_IN_PEEK_MODE) {
             handle.className = 'showContextMenuHandle';
@@ -333,7 +348,7 @@ self = {
         // Show header
         if (headText || subheadText) {
             header = document.getElementById('contextMenuHeader');
-            header.className = 'contextMenuHeader';
+            header.className = 'showMenuHeader';
             if (headText) {
                 setHeadText(headText);
             }
@@ -432,22 +447,24 @@ self = {
                     item.className = 'hideContextMenuItem';
                 }
             }
-            // Hide header
-            if (headText || subheadText) {
-                header = document.getElementById('contextMenuHeader');
-                header.className = '';
-                if (headText) {
-                    setHeadText('');
-                }
-                if (subheadText) {
-                    setSubheadText('');
-                }
-                if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
-                    menuContent.style.position = '';
-                    menuContent.style.top = '';
-                }
+        }
+
+        // Always hide the header div whenever we are peeking
+        if (headText || subheadText) {
+            header = document.getElementById('contextMenuHeader');
+            header.className = '';
+            if (headText) {
+                setHeadText('');
+            }
+            if (subheadText) {
+                setSubheadText('');
+            }
+            if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
+                menuContent.style.position = '';
+                menuContent.style.top = '';
             }
         }
+
         // This is for single item peek mode
         menu.style.overflowX = 'visible';
         menu.style.overflowY = 'visible';
