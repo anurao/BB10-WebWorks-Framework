@@ -386,9 +386,7 @@ self = {
         var i,
             header,
             menuContent,
-            item,
-            headerTextElement,
-            subHeaderTextElement;
+            item;
 
         if (menuCurrentState === state.VISIBLE) {
             return;
@@ -412,16 +410,17 @@ self = {
             if (subheadText) {
                 setSubheadText(subheadText);
             }
+        }
 
-            // Move content so that menu items won't be covered by header
-            // And scale the height to be 80% for scrolling if we have more numItems
-            if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
-                menuContent = document.getElementById('contextMenuContent');
-                menuContent.style.position = 'absolute';
-                menuContent.style.top = '131px';
-                menuContent.style.height = '80%';
-                menuContent.style.overflowY = 'scroll';
-            }
+        // Move content so that menu items won't be covered by header
+        // And scale the height to be 80% for scrolling if we have more numItems
+        if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
+            menuContent = document.getElementById('contextMenuContent');
+            menuContent.style.position = 'absolute';
+            menuContent.style.top = (headText || subheadText) ? '131px' : '0px';
+            menuContent.style.height = (headText || subheadText) ? '80%': '100%';
+            menuContent.style.overflowY = 'scroll';
+            menuContent.scrollTop = 0;
         }
         
         // Show all menu items
