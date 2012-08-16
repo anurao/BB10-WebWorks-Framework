@@ -61,14 +61,14 @@ function positionHandle() {
         handle.style.top = top + 'px';
 
         // If have more options than the limit, show the more dots on the handle
-        if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE && moreIcon == null) {
+        if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE && moreIcon === null) {
             moreIcon = document.createElement('img');
             moreIcon.id = "moreHandleIcon";
             moreIcon.style = 'showMoreHandleIcon';
             moreIcon.src = 'assets/ActionOverflowMenu.png';
             moreIcon.className = 'showMoreHandleIcon';
             handle.appendChild(moreIcon);
-        } else if (numItems < MAX_NUM_ITEMS_IN_PEEK_MODE && moreIcon != null) {
+        } else if (numItems < MAX_NUM_ITEMS_IN_PEEK_MODE && moreIcon !== null) {
             handle.removeChild(moreIcon);
         }
 
@@ -85,8 +85,6 @@ function positionHandle() {
 
 function menuDragStart() {
     menu.style.webkitTransitionDuration = '0s';
-    menu.style.overflowX = 'hidden';
-    menu.style.overflowY = 'scroll';
 }
 
 function menuDragMove(pageX) {
@@ -186,10 +184,20 @@ function getMenuItemAtPosition(currentYPosition, elementHeight) {
 }
 
 function highlightMenuItem(item) {
+    var previousHighlightedItems,
+        i;
+
     if (menuCurrentState === state.PEEK) {
         item.className = 'contextmenuItem showContextmenuItem';
         item.active = true;
     } else if (menuCurrentState === state.VISIBLE) {
+        // If we have any other item's that are highlighted, force remove it since we can only have one
+        previousHighlightedItems = document.getElementsByClassName('fullContextmenuItem');
+        
+        for (i = 0; i < previousHighlightedItems.length; i += 1) {
+            previousHighlightedItems[i].className = 'contextmenuItem';
+        }
+
         item.className = 'contextmenuItem fullContextmenuItem';
         item.active = true;
     }
@@ -227,12 +235,22 @@ function menuItemTouchMoveHandler(evt) {
 }
 
 function menuItemTouchEndHandler(evt) {
+    var elements,
+        i;
+
     evt.stopPropagation();
     if (currentPeekIndex !== -1) {
-        var element = elements[currentPeekIndex];
-        element.className = 'contextmenuItem';
-        element.active = false;
-        window.qnx.webplatform.getController().remoteExec(1, 'executeMenuAction', [element.attributes.actionId.value]);
+
+        // Clear all the highlighted elements since the highlight can get stuck when scrolling a list when we 
+        // are using overflow-y scroll
+        elements = document.getElementsByClassName('contextmenuItem');
+
+        for (i = 0; i < elements.length; i += 1) {
+            elements[i].className = 'contextmenuItem';
+            elements[i].active = false;
+        }
+
+        window.qnx.webplatform.getController().remoteExec(1, 'executeMenuAction', [elements[currentPeekIndex].attributes.actionId.value]);
         self.hideContextMenu();
     }
 }
@@ -269,6 +287,31 @@ function setSubheadText(text) {
     } else {
         subheadText.style.height = '0px';
     }
+}
+
+function resetHeader() {
+    var header = document.getElementById('contextMenuHeader');
+
+    // Always hide the header div whenever we are peeking
+    if (headText || subheadText) {
+        header = document.getElementById('contextMenuHeader');
+        header.className = '';
+        if (headText) {
+            setHeadText('');
+        }
+        if (subheadText) {
+            setSubheadText('');
+        }
+    }
+}
+
+function resetMenuContent() {
+    var menuContent = document.getElementById('contextMenuContent');
+
+    menuContent.style.position = '';
+    menuContent.style.top = '';
+    menuContent.style.height = '';
+    menuContent.style.overflowY = '';
 }
 
 function init() {
@@ -356,10 +399,13 @@ self = {
                 setSubheadText(subheadText);
             }
             // Move content so that menu items won't be covered by header
+            // And scale the height to be 80% for scrolling if we have more numItems
             if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
                 menuContent = document.getElementById('contextMenuContent');
                 menuContent.style.position = 'absolute';
                 menuContent.style.top = '131px';
+                menuContent.style.height = '80%';
+                menuContent.style.overflowY = 'scroll';
             }
         }
         
@@ -386,6 +432,7 @@ self = {
         if (menuCurrentState === state.HIDE) {
             return;
         }
+
         numItems = 0;
         menu.style.webkitTransitionDuration = '0.25s';
         menu.className = 'hideMenu';
@@ -399,11 +446,13 @@ self = {
         window.document.body.removeEventListener('touchend', bodyTouchEndHandler, false);
 
         var menuContent = document.getElementById('contextMenuContent');
+
         while (menuContent.firstChild) {
             menuContent.removeChild(menuContent.firstChild);
         }
-        menuContent.style.position = '';
-        menuContent.style.top = '';
+
+        resetHeader();
+        resetMenuContent();
 
         window.qnx.webplatform.getController().remoteExec(1, 'webview.notifyContextMenuCancelled');
         if (evt) {
@@ -411,6 +460,7 @@ self = {
             evt.stopPropagation();
         }
         menuCurrentState = state.HIDE;
+
         // Reset sensitivity
         window.qnx.webplatform.getController().remoteExec(1, 'webview.setSensitivity', ['SensitivityTest']);
     },
@@ -425,10 +475,8 @@ self = {
         }
         peekModeNumItems = numItems > MAX_NUM_ITEMS_IN_PEEK_MODE ? MAX_NUM_ITEMS_IN_PEEK_MODE : numItems;
         elements = document.getElementsByClassName("contextmenuItem");
-        var menuContent = document.getElementById('contextMenuContent'),
-            item,
-            i,
-            header;
+        var item,
+            i;
 
         // Cache items for single item peek mode.
         window.qnx.webplatform.getController().remoteExec(1, 'webview.setSensitivity', ['SensitivityAlways']);
@@ -449,21 +497,8 @@ self = {
             }
         }
 
-        // Always hide the header div whenever we are peeking
-        if (headText || subheadText) {
-            header = document.getElementById('contextMenuHeader');
-            header.className = '';
-            if (headText) {
-                setHeadText('');
-            }
-            if (subheadText) {
-                setSubheadText('');
-            }
-            if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
-                menuContent.style.position = '';
-                menuContent.style.top = '';
-            }
-        }
+        resetHeader();
+        resetMenuContent();
 
         // This is for single item peek mode
         menu.style.overflowX = 'visible';

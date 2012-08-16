@@ -48,8 +48,9 @@ body {
 }
 
 #contextMenuContent {
-    font-size: 3.4em;
+    font-size: 2.5em;
     color: #fafafa;
+    width: 100%;
     -webkit-backface-visibility: hidden;
     -webkit-perspective: 1000;
 }
@@ -105,7 +106,7 @@ body {
     border-bottom: 2px solid #414141;
     height: 119px;
     -webkit-transition-duration: 0.35s;
-    -webkit-animation-timing-function: ease-out;
+    -webkit-animation-timing-funq1ction: ease-out;
     white-space: nowrap;
     color: #FAFAFA;
     background-color: #000000;
@@ -132,6 +133,6 @@ body {
 }
 
 .fullContextmenuItem {
-    -webkit-transition: background 0.5s;
+    -webkit-transition: background 0.25s;
     background-color: #66ccff;
 }
