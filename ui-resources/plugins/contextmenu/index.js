@@ -273,7 +273,14 @@ function setHeadText(text) {
     var headText = document.getElementById('contextMenuHeadText');
     headText.innerText = text;
     if (text) {
-        headText.style.height = '60px';
+        if (!subheadText || subheadText === '') {
+            headText.style.height = '105px';
+            headText.style.lineHeight = '105px';
+        } else {
+            headText.style.height = '60px';
+            headText.style.lineHeight = '60px';
+        }
+
     } else {
         headText.style.height = '0px';
     }
@@ -283,7 +290,13 @@ function setSubheadText(text) {
     var subheadText = document.getElementById('contextMenuSubheadText');
     subheadText.innerText = text;
     if (text) {
-        subheadText.style.height = '60px';
+        if (!headText || headText === '') {
+            subheadText.style.height = '105px';
+            subheadText.style.lineHeight = '105px';
+        } else {
+            subheadText.style.height = '60px';
+            subheadText.style.lineHeight = '60px';
+        }
     } else {
         subheadText.style.height = '0px';
     }
@@ -373,7 +386,9 @@ self = {
         var i,
             header,
             menuContent,
-            item;
+            item,
+            headerTextElement,
+            subHeaderTextElement;
 
         if (menuCurrentState === state.VISIBLE) {
             return;
@@ -388,7 +403,6 @@ self = {
             evt.stopPropagation();
         }
 
-        // Show header
         if (headText || subheadText) {
             header = document.getElementById('contextMenuHeader');
             header.className = 'showMenuHeader';
@@ -398,6 +412,7 @@ self = {
             if (subheadText) {
                 setSubheadText(subheadText);
             }
+
             // Move content so that menu items won't be covered by header
             // And scale the height to be 80% for scrolling if we have more numItems
             if (numItems > MAX_NUM_ITEMS_IN_PEEK_MODE) {
