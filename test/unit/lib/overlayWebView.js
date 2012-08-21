@@ -50,9 +50,7 @@ describe("Overlay Webview", function () {
                 getController: function () {
                     return mockedController;
                 },
-                createWebView: function (createFunction) {
-                    //process.nextTick(createFunction);
-                    //setTimeout(createFunction,0);
+                createUIWebView: function (createFunction) {
                     runs(createFunction);
                     return mockedWebview;
                 },

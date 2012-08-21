@@ -33,7 +33,7 @@ var _apiDir = __dirname + "./../../../../../ext/ui.contextmenu",
     },
     mockedApplication = {
         invocation : {
-            TARGET_TYPE_ALL : '',
+            TARGET_TYPE_MASK_APPLICATION : '',
             ACTION_TYPE_MENU : '',
             queryTargets : jasmine.createSpy()
         },
@@ -48,7 +48,7 @@ var _apiDir = __dirname + "./../../../../../ext/ui.contextmenu",
         }
     };
 
-describe("blackberry.ui.actions.handlers index", function () {
+describe("blackberry.ui.contextmenu.actions.handlers index", function () {
     beforeEach(function () {
         GLOBAL.window.qnx.webplatform = mockedWebPlatform;
         GLOBAL.window.webworks = mockedWebWorks;
