@@ -29,7 +29,7 @@ _self.invoke = function (request, onSuccess, onError) {
             return;
         }
     } else {
-        if (request["data"]) {
+        if (request["data"] && !Array.isArray(request["data"])) {
             data = request["data"];
 
             try {

@@ -65,6 +65,13 @@ module.exports = {
             }
         });
 
+        if (Array.isArray(request["data"])) {
+            request["data"] = escape(JSON.stringify(request["data"]));
+        }
+
+        console.log("request");
+        console.log(request);
+
         window.qnx.webplatform.getApplication().invocation.invoke(request, callback);
         success();
     },
