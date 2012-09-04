@@ -39,7 +39,10 @@ describe("Overlay Webview", function () {
             windowGroup: undefined,
             addEventListener: jasmine.createSpy(),
             enableWebEventRedirect: jasmine.createSpy(),
-            notifyContextMenuCancelled: jasmine.createSpy()
+            notifyContextMenuCancelled: jasmine.createSpy(),
+            contextMenu: {
+                subscribeTo: jasmine.createSpy()
+            }
         };
         mockedApplication = {
             windowVisible: undefined
@@ -152,5 +155,10 @@ describe("Overlay Webview", function () {
             expect(mockedWebview.notifyContextMenuCancelled).toHaveBeenCalled();
         });
 
+        it("can render the ccm for another webview ", function () {
+            webview.create();
+            webview.renderContextMenuFor(webview);
+            expect(mockedWebview.contextMenu.subscribeTo).toHaveBeenCalledWith(webview);
+        });
     });
 });
