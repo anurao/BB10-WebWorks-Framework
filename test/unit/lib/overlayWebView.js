@@ -127,8 +127,7 @@ describe("Overlay Webview", function () {
 
         it("can get the id for the webiew", function () {
             webview.create();
-            webview.id();
-            expect(mockedWebview.id).toEqual(42);
+            expect(webview.id).toEqual(mockedWebview.id);
         });
 
         it("can set geometry", function () {

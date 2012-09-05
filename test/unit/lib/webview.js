@@ -113,7 +113,7 @@ describe("webview", function () {
     describe("id", function () {
         it("can get the id for the webiew", function () {
             webview.create();
-            webview.id();
+            webview.id;
             expect(mockedWebview.id).toEqual(42);
         });
     });
