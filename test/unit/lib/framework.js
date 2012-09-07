@@ -95,6 +95,7 @@ describe("framework", function () {
         framework.start();
         expect(controllerWebView.init).toHaveBeenCalled();
         expect(webview.create).toHaveBeenCalled();
+        
     });
 
     it("adds all three webviews to the rotationHandler", function () {

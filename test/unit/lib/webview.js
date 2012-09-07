@@ -26,6 +26,7 @@ describe("webview", function () {
             setGeometry: jasmine.createSpy(),
             setApplicationOrientation: jasmine.createSpy(),
             setExtraPluginDirectory: jasmine.createSpy(),
+            setPatternMatching: jasmine.createSpy(),
             notifyApplicationOrientationDone: jasmine.createSpy(),
             onContextMenuRequestEvent: undefined,
             onNetworkResourceRequested: undefined,
@@ -148,6 +149,14 @@ describe("webview", function () {
             webview.create();
             webview.setExtraPluginDirectory('/usr/lib/browser/plugins');
             expect(mockedWebview.setExtraPluginDirectory).toHaveBeenCalledWith('/usr/lib/browser/plugins');
+        });
+    });
+
+    describe("pattern matching", function () {
+        it("can enable pattern matching", function () {
+            webview.create();
+            webview.setPatternMatching(true);
+            expect(mockedWebview.setPatternMatching).toHaveBeenCalledWith(true);
         });
     });
 
