@@ -30,6 +30,21 @@ module.exports = {
 
         window.qnx.webplatform.getApplication().cards.camera.open(mode, done, cancel, invokeCallback);
         success();
+    },
+    invokeFilePicker: function (success, fail, args) {
+        var options = JSON.parse(decodeURIComponent(args["options"])),
+            done = function (path) {
+                _event.trigger("invokeFilePicker.doneEventId", path);
+            },
+            cancel = function (reason) {
+                _event.trigger("invokeFilePicker.cancelEventId", reason);
+            },
+            invokeCallback = function (error) {
+                _event.trigger("invokeFilePicker.invokeEventId", error);
+            };
+
+        window.qnx.webplatform.getApplication().cards.filePicker.open(options, done, cancel, invokeCallback);
+        success();
     }
 };
 

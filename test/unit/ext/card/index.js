@@ -18,6 +18,7 @@ var _apiDir = __dirname + "./../../../../ext/card/",
     _libDir = __dirname + "./../../../../lib/",
     _extDir = __dirname + "./../../../../ext/",
     mockedCamera,
+    mockedFile,
     index,
     successCB,
     failCB;
@@ -28,6 +29,9 @@ describe("invoke.card index", function () {
         mockedCamera = {
             open: jasmine.createSpy("camera.open")
         };
+        mockedFile = {
+            open: jasmine.createSpy("file.open")
+        };
         GLOBAL.window = {};
         GLOBAL.window.qnx = {
             callExtensionMethod : function () {},
@@ -35,7 +39,8 @@ describe("invoke.card index", function () {
                 getApplication: function () {
                     return {
                         cards: {
-                            camera: mockedCamera
+                            camera: mockedCamera,
+                            file: mockedFile
                         }
                     };
                 }
@@ -55,9 +60,8 @@ describe("invoke.card index", function () {
         failCB = null;
     });
 
-    describe("invoke", function () {
-
-        it("can invoke with target", function () {
+    describe("invoke camera", function () {
+        it("can invoke camera with mode", function () {
             var successCB = jasmine.createSpy(),
                 mockedArgs = {
                     "mode": encodeURIComponent(JSON.stringify({mode: "photo"}))
@@ -67,6 +71,20 @@ describe("invoke.card index", function () {
             expect(mockedCamera.open).toHaveBeenCalledWith({
                 mode: "photo"
             }, jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
+            expect(successCB).toHaveBeenCalled();
+        });
+    });
+    describe("invoke file picker", function () {
+        it("can invoke file picker with options", function () {
+            var successCB = jasmine.createSpy(),
+                mockedArgs = {
+                    "mode": encodeURIComponent(JSON.stringify({options: {mode: "Picker"}}))
+                };
+
+            index.invokeCamera(successCB, null, mockedArgs);
+            expect(mockedCamera.open).toHaveBeenCalledWith({
+                    options: {mode: "Picker"}
+                }, jasmine.any(Function), jasmine.any(Function), jasmine.any(Function));
             expect(successCB).toHaveBeenCalled();
         });
     });

@@ -31,7 +31,6 @@ var _extDir = __dirname + "./../../../../ext",
 describe("invoke.card client", function () {
     beforeEach(function () {
         GLOBAL.window = GLOBAL;
-        GLOBAL.window.btoa = jasmine.createSpy("window.btoa").andReturn("base64 string");
         mockedWebworks.event.once = jasmine.createSpy("webworks.event.once");
         GLOBAL.window.webworks = mockedWebworks;
         client = require(_apiDir + "/client");
@@ -42,13 +41,6 @@ describe("invoke.card client", function () {
         client = null;
     });
 
-    describe("defines read only fields for modes", function () {
-        it("should define photo|video|full", function () {
-            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "CAMERA_MODE_PHOTO", "photo");
-            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "CAMERA_MODE_VIDEO", "video");
-            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "CAMERA_MODE_FULL", "full");
-        });
-    });
 
     describe("invoke camera ", function () {
         var done,
@@ -62,13 +54,114 @@ describe("invoke.card client", function () {
         it("should call execAsyn with correct mode", function () {
             client.invokeCamera("photo");
             expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "photo"});
+            client.invokeCamera("video");
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "video"});
+            client.invokeCamera("full");
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "full"});
         });
         it("should register all the events", function () {
             client.invokeCamera("photo", done, cancel, invokeCallback);
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), done);
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), cancel);
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), invokeCallback);
+
+            client.invokeCamera("video", done, cancel, invokeCallback);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), done);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), cancel);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), invokeCallback);
+
+            client.invokeCamera("full", done, cancel, invokeCallback);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), done);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), cancel);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), invokeCallback);
+        });
+        it("should define photo|video|full", function () {
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "CAMERA_MODE_PHOTO", "photo");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "CAMERA_MODE_VIDEO", "video");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "CAMERA_MODE_FULL", "full");
+        });
+    });
+    describe("invoke File Picker ", function () {
+        var details,
+            done,
+            cancel,
+            invokeCallback;
+        beforeEach(function () {
+            details = {
+                mode: "Picker"
+            };
+            done = jasmine.createSpy("done");
+            cancel = jasmine.createSpy("cancel");
+            invokeCallback = jasmine.createSpy("invokeCallback");
+        });
+        it("should call execAsyn with correct mode", function () {
+            details = { mode: "Picker" };
+            client.invokeFilePicker(details);
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+
+            details = { mode: "PickerMultiple" };
+            client.invokeFilePicker(details);
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+
+            details = { mode: "Saver" };
+            client.invokeFilePicker(details);
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+
+            details = { mode: "SaverMultiple" };
+            client.invokeFilePicker(details);
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+        });
+        it("should register all the events", function () {
+            details = { mode: "Picker" };
+            client.invokeFilePicker(details, done, cancel, invokeCallback);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), done);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), cancel);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), invokeCallback);
+
+            details = { mode: "PickerMultiple" };
+            client.invokeFilePicker(details, done, cancel, invokeCallback);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), done);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), cancel);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), invokeCallback);
+
+            details = { mode: "Saver" };
+            client.invokeFilePicker(details, done, cancel, invokeCallback);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), done);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), cancel);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), invokeCallback);
+
+            details = { mode: "SaverMultiple" };
+            client.invokeFilePicker(details, done, cancel, invokeCallback);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), done);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), cancel);
+            expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), invokeCallback);
+        });
+        it("should define all file picker constants", function () {
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_MODE_PICKER", "Picker");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_MODE_SAVER", "Saver");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_MODE_PICKER_MULTIPLE", "PickerMultiple");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_MODE_SAVER_MULTIPLE", "SaverMultiple");
+
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_VIEWER_MODE_LIST", "ListView");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_VIEWER_MODE_GRID", "GridView");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_VIEWER_MODE_DEFAULT", "Default");
+
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_SORT_BY_NAME", "Name");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_SORT_BY_DATE", "Date");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_SORT_BY_SUFFIX", "Suffix");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_SORT_BY_SIZE", "Size");
+
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_SORT_ORDER_ASCENDING", "Ascending");
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_SORT_ORDER_DESCENDING", "Descending");
+
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_TYPE_PICTURE", 'picture');
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_TYPE_DOCUMENT", 'document');
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_TYPE_MUSIC", 'music');
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_TYPE_VIDEO", 'video');
+            expect(mockedWebworks.defineReadOnlyField).toHaveBeenCalledWith(client, "FILEPICKER_TYPE_OTHER", 'other');
         });
     });
 
 });
+
+
