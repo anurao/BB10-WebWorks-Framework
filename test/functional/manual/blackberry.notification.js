@@ -269,25 +269,93 @@ describe("blackberry.notification", function () {
     });
 
     it('should overwrite notifications with the same tags', function () {
-        var notify1,
-            notify2,
-            confirm1,
-            confirm2;
+        var confirm,
+            notify1,
+            notify2;
         
         try {
             notify1 = new window.Notification('notify1', {'tag': 'duplicate tag'});
-            confirm1 = window.comfirm("Check the UIB and confirm that there is a notification with the title notify1");
             notify2 = new window.Notification('notify2', {'tag': 'duplicate tag'});
-            confirm2 = window.confirm("Check the UIB and confirm that the notification has been replaced with a notification titled notify2");
         } catch (e) {
             exThrown = true;
             console.log(e);
         }
 
+        confirm = window.confirm("Do you see a notification titled notify2?");
+
         expect(exThrown).not.toEqual(true);
-        expect(confirm1).toEqual(true);
-        expect(confirm2).toEqual(true);
-        notify1.close();
+        expect(confirm).toEqual(true);
         notify2.close();
+    });
+
+
+    it('target specified without any action should cause action to default to bb.action.OPEN', function () {
+        var confirm,
+            invokedFlag,
+            invokedData,
+            target = "net.rim.webworks.SmokeTest";
+            targetAction = "bb.action.OPEN";
+
+        runs(function () {
+            try {
+                blackberry.event.addEventListener("invoked", function (data) {
+                    invokedData = data;
+                    invokedFlag = true;
+                });
+                notifObj = new window.Notification(notifTitle, {'body': notifBody, 'target': target});
+                alert("To invoke wwTest app itself, in UIB select notificatoin with title '" + notifTitle + "' and body '" + notifBody + "', then dimsiss this alert.");
+            } catch (e) {
+                exThrown = true;
+                console.log(e);
+            }
+        });
+
+        waitsFor(function () {
+            return invokedFlag; 
+        });
+
+        runs(function () {
+            confirm = window.confirm("Does wwTest app was invoked?");
+
+            expect(confirm).toEqual(true);
+            expect(exThrown).not.toEqual(true);
+            
+            expect(invokedData.target).toEqual(target);
+            expect(invokedData.action).toEqual(targetAction);
+        });
+    });
+
+    it('no target specified should use user specified action', function () {
+        var confirm,
+            invokedFlag,
+            invokedData,
+            targetAction = "bb.action.VIEW";
+
+        runs(function () {
+            try {
+                blackberry.event.addEventListener("invoked", function (data) {
+                    invokedData = data;
+                    invokedFlag = true;
+                });
+                notifObj = new window.Notification(notifTitle, {'body': notifBody, 'targetAction': targetAction});
+                alert("To invoke wwTest app itself, in UIB select notificatoin with title '" + notifTitle + "' and body '" + notifBody + "', then dimsiss this alert.");
+            } catch (e) {
+                exThrown = true;
+                console.log(e);
+            }
+        });
+
+        waitsFor(function () {
+            return invokedFlag; 
+        });
+
+        runs(function () {
+            confirm = window.confirm("Does wwTest app was invoked?");
+
+            expect(confirm).toEqual(true);
+            expect(exThrown).not.toEqual(true);
+            
+            expect(invokedData.action).toEqual(targetAction);
+        });
     });
 });
