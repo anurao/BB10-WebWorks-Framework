@@ -206,6 +206,7 @@ int BBMBPS::WaitForEvents()
                                 switch (eventType) {
                                     case BBMSP_SP_EVENT_PROFILE_CHANGED:
                                     {
+                                        processContactUpdate(bbmEvent);
                                         int profileUpdateType;
                                         bbmsp_event_profile_changed_get_profile(bbmEvent, &bbmProfile);
                                         profileUpdateType = bbmsp_event_profile_changed_get_presence_update_type(bbmEvent);
