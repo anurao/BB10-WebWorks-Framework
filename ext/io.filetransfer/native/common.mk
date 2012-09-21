@@ -5,15 +5,16 @@ include $(QCONFIG)
 
 NAME=filetransfer
 
-# Add your required library names, here
-LIBS+=bps curl
+include ../../../../meta.mk
 
-# Include Paths
-EXTRA_INCVPATH+=../../../../../dependencies/jnext_1_0_8_3/jncore/jnext-extensions/common \
-                ../../../../../dependencies/JsonCpp/jsoncpp-src-0.5.0/include \
-                ../../../../ui.dialog/native
+EXTRA_SRCVPATH+=../../../../ui.dialog/native
 
-EXTRA_SRCVPATH+=../../../../../dependencies/jnext_1_0_8_3/jncore/jnext-extensions/common \
-                ../../../../../dependencies/JsonCpp/jsoncpp-src-0.5.0/src/lib_json
+SRCS+=filetransfer_curl.cpp \
+      filetransfer_js.cpp \
+      ../../../../ui.dialog/native/dialog_bps.cpp
+
+EXTRA_INCVPATH+=../../../../ui.dialog/native
 
 include $(MKFILES_ROOT)/qtargets.mk
+
+LIBS+=bps curl

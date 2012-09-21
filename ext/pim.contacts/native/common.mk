@@ -5,14 +5,11 @@ include $(QCONFIG)
 
 NAME=pimcontacts
 
-LIBS+=bbpim
+include ../../../../meta.mk
 
-# Include Paths
-EXTRA_INCVPATH+=../../../../../dependencies/jnext_1_0_8_3/jncore/jnext-extensions/common \
-                ../../../../../dependencies/JsonCpp/jsoncpp-src-0.5.0/include
-
-EXTRA_SRCVPATH+=../../../../../dependencies/jnext_1_0_8_3/jncore/jnext-extensions/common \
-                ../../../../../dependencies/JsonCpp/jsoncpp-src-0.5.0/src/lib_json
-
+SRCS+=pim_contacts_qt.cpp \
+      pim_contacts_js.cpp
 
 include $(MKFILES_ROOT)/qtargets.mk
+
+LIBS+=bbpim QtCore

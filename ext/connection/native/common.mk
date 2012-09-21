@@ -5,11 +5,11 @@ include $(QCONFIG)
 
 NAME=netstatus
 
-# Add your required library names, here
+include ../../../../meta.mk
+
+SRCS+=connection_bps.cpp \
+      connection_js.cpp
+
 LIBS+=bps
-
-EXTRA_INCVPATH+=../../../../../dependencies/jnext_1_0_8_3/jncore/jnext-extensions/common
-
-EXTRA_SRCVPATH+=../../../../../dependencies/jnext_1_0_8_3/jncore/jnext-extensions/common
 
 include $(MKFILES_ROOT)/qtargets.mk
