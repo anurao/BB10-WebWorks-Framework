@@ -84,11 +84,11 @@ JNEXT.Connection = function () {
     };
 
     self.init = function () {
-        if (!JNEXT.require("netstatus")) {
+        if (!JNEXT.require("libnetstatus")) {
             return false;
         }
 
-        self.m_id = JNEXT.createObject("netstatus.Connection");
+        self.m_id = JNEXT.createObject("libnetstatus.Connection");
 
         if (self.m_id === "") {
             return false;
