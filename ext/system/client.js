@@ -45,7 +45,12 @@ _self.hasCapability = function (capability) {
     return window.webworks.execSync(ID, "hasCapability", {"capability": capability});
 };
 
-defineGetter("language");
+Object.defineProperty(_self, "language", {
+    get: function () {
+        return navigator.language;
+    }
+});
+
 defineGetter("region");
 
 window.webworks.defineReadOnlyField(_self, "ALLOW", 0);

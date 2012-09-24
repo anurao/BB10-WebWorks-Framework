@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 var _apiDir = __dirname + "./../../../../ext/identity/",
-    _libDir = __dirname + "./../../../../lib/",
-    index,
-    mockDevice,
-    path = "/pps/services/private/deviceproperties",
-    mode = "0";
+    index;
 
 describe("identity index", function () {
     beforeEach(function () {
         index = require(_apiDir + "index");
-        mockDevice = {
-            getDevicePin: function (success, fail) {
-                success("0x12345");
-            }
-        };
         GLOBAL.window = {
             qnx: {
                 webplatform: {
-                    getDevice: jasmine.createSpy().andReturn(mockDevice)
+                    device: {
+                    }
                 }
             }
         };
@@ -43,12 +35,23 @@ describe("identity index", function () {
     });
 
     describe("uuid", function () {
-        it("can call success with devicepin", function () {
+        it("calls success when devicepin is truthy", function () {
             var success = jasmine.createSpy(),
                 fail = jasmine.createSpy();
 
+            window.qnx.webplatform.device.devicepin = (new Date()).getTime();
             index.uuid(success, fail);
-            expect(success).toHaveBeenCalledWith("0x12345");
+            expect(success).toHaveBeenCalledWith(window.qnx.webplatform.device.devicepin);
+            expect(fail).not.toHaveBeenCalled();
+        });
+        it("calls fail when devicepin is falsey", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+
+            window.qnx.webplatform.device.devicepin = undefined;
+            index.uuid(success, fail);
+            expect(fail).toHaveBeenCalledWith(-1, "Failed to retrieve devicepin");
+            expect(success).not.toHaveBeenCalled();
         });
     });
 });

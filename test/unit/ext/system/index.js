@@ -79,7 +79,7 @@ describe("system index", function () {
 
         it("responds to 'batterycritical' events", function () {
             var eventName = "batterycritical",
-                args = {eventName : encodeURIComponent(eventName)}; 
+                args = {eventName : encodeURIComponent(eventName)};
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
             eventExt.add(null, null, args);
@@ -90,7 +90,7 @@ describe("system index", function () {
 
         it("removes 'batterycritical' events", function () {
             var eventName = "batterycritical",
-                args = {eventName : encodeURIComponent(eventName)}; 
+                args = {eventName : encodeURIComponent(eventName)};
             spyOn(events, "remove");
             eventExt.remove(null, null, args);
             expect(events.remove).toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe("system index", function () {
 
         it("responds to 'batterylow' events", function () {
             var eventName = "batterylow",
-                args = {eventName : encodeURIComponent(eventName)}; 
+                args = {eventName : encodeURIComponent(eventName)};
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
             eventExt.add(null, null, args);
@@ -110,8 +110,8 @@ describe("system index", function () {
 
         it("removes 'batterylow' events", function () {
             var eventName = "batterylow",
-                args = {eventName : encodeURIComponent(eventName)}; 
-            spyOn(events, "remove");            
+                args = {eventName : encodeURIComponent(eventName)};
+            spyOn(events, "remove");
             eventExt.remove(null, null, args);
             expect(events.remove).toHaveBeenCalled();
             expect(events.remove.mostRecentCall.args[0].event.eventName).toEqual(eventName);
@@ -120,7 +120,7 @@ describe("system index", function () {
         it("responds to 'batterystatus' events", function () {
             var eventName = "batterystatus",
                 args = {eventName: encodeURIComponent(eventName)};
-                 
+
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
             eventExt.add(successCB, failCB, args);
@@ -128,112 +128,74 @@ describe("system index", function () {
             expect(events.add.mostRecentCall.args[0].event.eventName).toEqual(eventName);
             expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
             expect(successCB).toHaveBeenCalled();
-            expect(failCB).not.toHaveBeenCalled();            
+            expect(failCB).not.toHaveBeenCalled();
         });
 
         it("removes 'batterystatus' events", function () {
             var eventName = "batterystatus",
-                args = {eventName: encodeURIComponent(eventName)}; 
+                args = {eventName: encodeURIComponent(eventName)};
 
             spyOn(events, "remove");
             eventExt.remove(successCB, failCB, args);
             expect(events.remove).toHaveBeenCalled();
             expect(events.remove.mostRecentCall.args[0].event.eventName).toEqual(eventName);
-            expect(successCB).toHaveBeenCalled();            
-            expect(failCB).not.toHaveBeenCalled();            
+            expect(successCB).toHaveBeenCalled();
+            expect(failCB).not.toHaveBeenCalled();
         });
 
         it("invokes success callback when battery event name with not defined", function () {
             var eventName = "batteryeventnotdefined",
                 args = {eventName: encodeURIComponent(eventName)};
-                 
+
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
             eventExt.add(successCB, failCB, args);
             expect(events.add).toHaveBeenCalled();
-            expect(successCB).toHaveBeenCalled();            
-            expect(failCB).not.toHaveBeenCalled();            
+            expect(successCB).toHaveBeenCalled();
+            expect(failCB).not.toHaveBeenCalled();
         });
 
         it("invokes success callback when tring to remove battery event with name not defined", function () {
             var eventName = "batteryeventnotdefined",
                 args = {eventName: encodeURIComponent(eventName)};
-                 
+
             spyOn(events, "remove");
             eventExt.remove(successCB, failCB, args);
             expect(events.remove).toHaveBeenCalled();
-            expect(successCB).toHaveBeenCalled();            
-            expect(failCB).not.toHaveBeenCalled();            
+            expect(successCB).toHaveBeenCalled();
+            expect(failCB).not.toHaveBeenCalled();
         });
-        
+
         it("invokes fail callback when exception occured", function () {
             var eventName = "batteryeventnotdefined",
                 args = {eventName: encodeURIComponent(eventName)};
-                 
+
             spyOn(events, "add").andCallFake(function () {
                 throw "";
             });
-            
-            sysIndex.registerEvents(jasmine.createSpy());            
+
+            sysIndex.registerEvents(jasmine.createSpy());
             eventExt.add(successCB, failCB, args);
             expect(events.add).toHaveBeenCalled();
-            expect(successCB).not.toHaveBeenCalled();            
+            expect(successCB).not.toHaveBeenCalled();
             expect(failCB).toHaveBeenCalledWith(-1, jasmine.any(String));
         });
 
         it("invokes fail callback when exception occured", function () {
             var eventName = "batteryeventnotdefined",
                 args = {eventName: encodeURIComponent(eventName)};
-                 
+
             spyOn(events, "remove").andCallFake(function () {
                 throw "";
             });
             eventExt.remove(successCB, failCB, args);
             expect(events.remove).toHaveBeenCalled();
-            expect(successCB).not.toHaveBeenCalled();            
+            expect(successCB).not.toHaveBeenCalled();
             expect(failCB).toHaveBeenCalledWith(-1, jasmine.any(String));
         });
     });
-    
-    /*
-        Helpers for device property tests
-     */
-    function failDevicePropertiesHelper(prop) {
-        var fail = jasmine.createSpy(),
-            mockPPS = {
-                open: jasmine.createSpy().andReturn(false),
-                close: jasmine.createSpy()
-            };
-
-        window.qnx.webplatform.pps.create = jasmine.createSpy().andReturn(mockPPS);
-
-        sysIndex[prop](null, fail, null, null);
-
-        expect(mockPPS.open).toHaveBeenCalledWith(window.qnx.webplatform.pps.FileMode.RDONLY);
-        expect(fail).toHaveBeenCalledWith(-1, jasmine.any(String));
-    }
-
-    function successDevicePropertiesHelper(prop, readObj, expectedValue) {
-        var success = jasmine.createSpy(),
-            mockPPS = {
-                open: jasmine.createSpy().andReturn(true),
-                close: jasmine.createSpy()
-            };
-
-        window.qnx.webplatform.pps.create = jasmine.createSpy().andReturn(mockPPS);
-
-        sysIndex[prop](success, null, null, null);
-
-        expect(mockPPS.onFirstReadComplete).toBeDefined();
-        mockPPS.onFirstReadComplete(readObj);
-
-        expect(mockPPS.open).toHaveBeenCalledWith(window.qnx.webplatform.pps.FileMode.RDONLY);
-        expect(mockPPS.close).toHaveBeenCalled();            
-        expect(success).toHaveBeenCalledWith(expectedValue);
-    }
 
     describe("device properties", function () {
-        var pps = require(libDir + "pps/pps");
 
         beforeEach(function () {
             sysIndex = require(apiDir + "index");
@@ -241,13 +203,7 @@ describe("system index", function () {
             GLOBAL.window = {
                 qnx: {
                     webplatform: {
-                        pps: {
-                            FileMode: {
-                                RDONLY: "0"
-                            },
-                            PPSMode: {
-                                FULL: "0"
-                            }
+                        device: {
                         }
                     }
                 }
@@ -259,102 +215,73 @@ describe("system index", function () {
             sysIndex = null;
         });
 
-        it("can call fail if failed to open PPS object for hardwareId", function () {
-            failDevicePropertiesHelper('hardwareId');
+        it("can call success when softwareVersion is truthy", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+
+            window.qnx.webplatform.device.scmbundle = (new Date()).getTime();
+            sysIndex.softwareVersion(success, fail);
+            expect(success).toHaveBeenCalledWith(window.qnx.webplatform.device.scmbundle);
+            expect(fail).not.toHaveBeenCalled();
         });
 
-        it("can call fail if failed to open PPS object for softwareVersion", function () {
-            failDevicePropertiesHelper('softwareVersion');
+        it("can call fail when softwareVersion is falsey", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+
+            sysIndex.softwareVersion(success, fail);
+            expect(success).not.toHaveBeenCalled();
+            expect(fail).toHaveBeenCalledWith(-1, "Failed to retrieve softwareVersion");
         });
 
-        it("can call success with hardwareId", function () {
-            successDevicePropertiesHelper('hardwareId', {
-                deviceproperties: {
-                    hardwareid: "0x8500240a"
-                }
-            }, "0x8500240a");
+        it("can call success when hardwareId is truthy", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+
+            window.qnx.webplatform.device.hardwareid = (new Date()).getTime();
+            sysIndex.hardwareId(success, fail);
+            expect(success).toHaveBeenCalledWith(window.qnx.webplatform.device.hardwareid);
+            expect(fail).not.toHaveBeenCalled();
         });
 
-        it("can call success with softwareVersion", function () {
-            successDevicePropertiesHelper('softwareVersion', {
-                deviceproperties: {
-                    scmbundle: "10.0.6.99"
-                }
-            }, "10.0.6.99");
-        });
-    });
+        it("can call fail when hardwareId is falsey", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
 
-    describe("device language", function () {
-        var pps = require(libDir + 'pps/pps');
-
-        beforeEach(function () {
-            GLOBAL.window = {
-                qnx: {
-                    webplatform: {
-                        pps: {
-                            FileMode: {
-                                RDONLY: "0"
-                            },
-                            PPSMode: {
-                                FULL: "0"
-                            }
-                        }
-                    }
-                }
-            };
-
-            sysIndex = require(apiDir + "index");
+            sysIndex.hardwareId(success, fail);
+            expect(success).not.toHaveBeenCalled();
+            expect(fail).toHaveBeenCalledWith(-1, "Failed to retrieve hardwareId");
         });
 
-        afterEach(function () {
-            GLOBAL.window = null;
-            sysIndex = null;
-        });
-
-        it("can call fail if failed to open PPS object for language", function () {
-            failDevicePropertiesHelper('language');
-        });
-
-        it("can call success with language", function () {
-            successDevicePropertiesHelper('language', {
-                _CS_LOCALE: "en_US"
-            }, "en_US");
-        });
     });
 
     describe("device region", function () {
-        var pps = require(libDir + 'pps/pps');
-
+        var mockedApplication;
         beforeEach(function () {
+            mockedApplication = {
+                systemRegion: (new Date()).toString()
+            };
             GLOBAL.window = {
                 qnx: {
                     webplatform: {
-                        pps: {
-                            FileMode: {
-                                RDONLY: "0"
-                            },
-                            PPSMode: {
-                                FULL: "0"
-                            }
-                        }
+                        getApplication: jasmine.createSpy("Application").andReturn(mockedApplication)
                     }
                 }
             };
+            sysIndex = require(apiDir + "index");
         });
 
         afterEach(function () {
-            GLOBAL.window = null;
+            mockedApplication = null;
+            delete GLOBAL.window;
             sysIndex = null;
         });
 
-        it("can call fail if failed to open PPS object for region", function () {
-            failDevicePropertiesHelper('region');
-        });
-
         it("can call success with region", function () {
-            successDevicePropertiesHelper('region', {
-                region: 'en_US'
-            }, 'en_US');
+            var sidneyReilly = jasmine.createSpy();
+            sysIndex.region(sidneyReilly);
+            expect(window.qnx.webplatform.getApplication).toHaveBeenCalled();
+            expect(sidneyReilly).toHaveBeenCalledWith(mockedApplication.systemRegion);
         });
     });
 

@@ -17,12 +17,10 @@ var Whitelist = require("../../lib/policy/whitelist").Whitelist,
     _whitelist = new Whitelist(),
     _event = require("../../lib/event"),
     _utils = require("../../lib/utils"),
-    _ppsUtils = require("../../lib/pps/ppsUtils"),
     _ppsEvents = require("../../lib/pps/ppsEvents"),
-    _pps = require("../../lib/pps/pps"),
     // This object is used by action map and contains links between pps object fields monitored for change in that object helper methods
     // to analyze if the value is the one callback should be invoked and fields name and value format as would appear on return.
-    // Set disableOnChange to true if not interested on change for a particular field but still interested to return its value.  
+    // Set disableOnChange to true if not interested on change for a particular field but still interested to return its value.
     _eventsMap = {
         batterycritical: {
             eventName: "batterycritical",
@@ -194,37 +192,8 @@ var Whitelist = require("../../lib/policy/whitelist").Whitelist,
         }
     };
 
-/*
- * Read the PPS object once and cache it for future calls
- */
-function getDeviceProperty(prop, success, fail) {
-    var successWrapper = function (data) {
-        success(data.deviceproperties[prop]);
-    };
-
-    _pps.readPPSObject('/pps/services/deviceproperties', successWrapper, fail);
-}
-
-// Get device language object from /pps/services/confstr/_CS_LOCALE
-function readDeviceLanguage(success, fail) {
-    var successWrapper = function (data) {
-        success(data._CS_LOCALE);
-    };
-
-    _pps.readPPSObject('/pps/services/confstr/_CS_LOCALE', successWrapper, fail);
-}
-
-// Get device region setting from /pps/services/locale/settings object
-function readDeviceRegion(success, fail) {
-    var successWrapper = function (data) {
-        success(data.region);
-    };
-
-    _pps.readPPSObject('/pps/services/locale/settings', successWrapper, fail);
-}
-
 module.exports = {
-    registerEvents: function (success, fail, args, env) {
+    registerEvents: function (success, fail) {
         try {
             var _eventExt = _utils.loadExtensionModule("event", "index");
             _eventExt.registerEvents(_actionMap);
@@ -244,7 +213,7 @@ module.exports = {
         success(allowed ? 0 : 1);
     },
 
-    hasCapability: function (success, fail, args, env) {
+    hasCapability: function (success, fail, args) {
         var SUPPORTED_CAPABILITIES = [
                 "input.touch",
                 "location.gps",
@@ -261,19 +230,25 @@ module.exports = {
         success(SUPPORTED_CAPABILITIES.indexOf(capability) >= 0);
     },
 
-    hardwareId: function (success, fail, args, env) {
-        getDeviceProperty("hardwareid", success, fail);
+    hardwareId: function (success, fail) {
+        var hardwareid = window.qnx.webplatform.device.hardwareid;
+        if (hardwareid) {
+            success(hardwareid);
+        } else {
+            fail(-1, "Failed to retrieve hardwareId");
+        }
     },
 
-    softwareVersion: function (success, fail, args, env) {
-        getDeviceProperty("scmbundle", success, fail);
+    softwareVersion: function (success, fail) {
+        var scmbundle = window.qnx.webplatform.device.scmbundle;
+        if (scmbundle) {
+            success(scmbundle);
+        } else {
+            fail(-1, "Failed to retrieve softwareVersion");
+        }
     },
 
-    language: function (success, fail, args, env) {
-        readDeviceLanguage(success, fail);
-    },
-
-    region: function (success, fail, args, env) {
-        readDeviceRegion(success, fail);
+    region: function (success) {
+        success(window.qnx.webplatform.getApplication().systemRegion);
     }
 };

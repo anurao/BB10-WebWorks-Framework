@@ -120,15 +120,18 @@ describe("system client", function () {
             sysClient = null;
 
             GLOBAL.window = GLOBAL;
-            mockedWebworks.execSync = jasmine.createSpy("execSync").andCallFake(function (namespace, field, args) {
-                if (field === "language") {
-                    return "fr_CA";
-                } else if (field === "region") {
+            mockedWebworks.execSync = jasmine.createSpy("execSync").andCallFake(function (namespace, field) {
+                if (field === "region") {
                     return "en_US";
                 }
             });
             mockedWebworks.defineReadOnlyField = jasmine.createSpy();
             GLOBAL.window.webworks = mockedWebworks;
+
+            GLOBAL.navigator = {
+                language: "fr_CA"
+            };
+
             // client needs to be required for each test
             sysClient = require(apiDir + "/client");
         });
@@ -138,8 +141,7 @@ describe("system client", function () {
         });
 
         it("language", function () {
-            expect(sysClient.language).toEqual("fr_CA");
-            expect(mockedWebworks.execSync.argsForCall).toContain([ID, "language", null]);
+            expect(sysClient.language).toEqual(navigator.language);
         });
 
         it("region", function () {

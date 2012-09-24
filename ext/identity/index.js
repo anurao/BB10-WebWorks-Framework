@@ -15,9 +15,12 @@
  */
 
 module.exports = {
-    uuid: function (success, fail, args, env) {
-        window.qnx.webplatform.getDevice().getDevicePin(function (data) {
-            success(data);
-        }, fail);
+    uuid: function (success, fail) {
+        var devicepin = window.qnx.webplatform.device.devicepin;
+        if (devicepin) {
+            success(devicepin);
+        } else {
+            fail(-1, "Failed to retrieve devicepin");
+        }
     }
 };
