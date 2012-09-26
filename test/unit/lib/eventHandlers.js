@@ -1,10 +1,10 @@
-describe("permissions", function () {
+describe("eventHandlers", function () {
     var webview,
         libPath = "./../../../",
         mockedController,
         mockedWebview,
         mockedApplication,
-        permissions = require(libPath + "lib/permissions"),
+        eventHandlers = require(libPath + "lib/eventHandlers"),
         config = require(libPath + "lib/config");
 
     beforeEach(function () {
@@ -72,15 +72,15 @@ describe("permissions", function () {
     });
 
     describe("init", function () {
-        it("can set up a permissions object", function () {
+        it("can set up a eventHandlers object", function () {
             webview.create();
             waits(1);
-            expect(permissions.init).toBeDefined();
-            permissions.init(mockedWebview);
+            expect(eventHandlers.init).toBeDefined();
+            eventHandlers.init(mockedWebview);
         });
 
         it("can check whether the onGeolocationPermissionRequest is defined", function () {
-            expect(permissions.onGeolocationPermissionRequest).toBeDefined();
+            expect(eventHandlers.onGeolocationPermissionRequest).toBeDefined();
         });
     });
 
@@ -89,8 +89,8 @@ describe("permissions", function () {
         beforeEach(function () {
             webview.create();
             waits(1);
-            expect(permissions.init).toBeDefined();
-            permissions.init(mockedWebview);
+            expect(eventHandlers.init).toBeDefined();
+            eventHandlers.init(mockedWebview);
         });
 
         it("can call the onGeolocationPermissionRequest with permission properly to allow", function () {
@@ -100,7 +100,7 @@ describe("permissions", function () {
             } else {
                 config.permissions = ["read_geolocation"];
             }
-            permissions.onGeolocationPermissionRequest(request);
+            eventHandlers.onGeolocationPermissionRequest(request);
             expect(mockedWebview.allowGeolocation).toHaveBeenCalledWith("test.com");
         });
 
@@ -109,7 +109,7 @@ describe("permissions", function () {
             if (config && config.permissions) {
                 config.permissions = null;
             }
-            permissions.onGeolocationPermissionRequest(request);
+            eventHandlers.onGeolocationPermissionRequest(request);
             expect(mockedWebview.disallowGeolocation).toHaveBeenCalledWith("test.com");
         });
     });
