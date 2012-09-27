@@ -24,8 +24,7 @@ module.exports = function (isForUnitTest) {
         buildEnv = process.env;
 
     return function (prev, baton) {
-        var SH_CMD = "bash ",
-            build = jWorkflow.order(),
+        var build = jWorkflow.order(),
             thisBaton = baton;
 
         thisBaton.take();

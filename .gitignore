@@ -1,16 +1,31 @@
+#Node Modules
 node_modules/
-build-*simulator/
-build-*device/
+
+#Eclipse Junk
 .project
 .settings
+
+#Mac OS stuff
 *.DS_Store
+
+#Ctags
 tags
+
+#swp and tmp files
 *.*~
 *.swp
+
+#output
 target/
 clientFiles/
-ext/*/native/unitTests/build/*
 lib/webworks-info.js
+
+#build-output
+ext/*/native/x86/*
+ext/*/native/arm/*
+ext/*/native/unitTests/build/*
+
+#Test-App generation
 test/test-app/wwTest.zip
 test/test-app/device
 test/test-app/simulator

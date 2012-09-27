@@ -39,7 +39,6 @@ function copyExtensions(extPath, extDest) {
                 extensionStats = fs.lstatSync(apiDir),
                 soPath,
                 soDest,
-                apiNativeDir,
                 jsFiles,
                 soFiles;
 
