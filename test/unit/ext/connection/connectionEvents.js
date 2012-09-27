@@ -34,9 +34,9 @@ describe("connection connectionEvents", function () {
         connectionEvents = null;
     });
 
-    it("can access netstatus module in JNEXT", function () {
-        expect(JNEXT.require).toHaveBeenCalledWith("netstatus");
-        expect(JNEXT.createObject).toHaveBeenCalledWith("netstatus.Connection");
+    it("can access libnetstatus module in JNEXT", function () {
+        expect(JNEXT.require).toHaveBeenCalledWith("libnetstatus");
+        expect(JNEXT.createObject).toHaveBeenCalledWith("libnetstatus.Connection");
     });
 
     describe("addEventListener", function () {
