@@ -86,6 +86,14 @@ _self.users.inviteToDownload = function () {
     return window.webworks.execAsync(_ID, "users/inviteToDownload");
 };
 
+_self.users.inviteToBBM = function () {
+    return window.webworks.execAsync(_ID, "users/inviteToBBM");
+};
+
+_self.users.inviteToBBMFromConnections = function () {
+    return window.webworks.execAsync(_ID, "users/inviteToBBMFromConnections");
+};
+
 window.webworks.execSync(_ID, "registerEvents", null);
 
 module.exports = _self;

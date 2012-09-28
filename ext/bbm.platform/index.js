@@ -171,6 +171,44 @@ module.exports = {
             gid = bbm.getgid();
             details.gid = gid;
             qnx.webplatform.getApplication().cards.bbm.inviteToDownload.open(details, done, cancel, callback);
-        }
+        },
+        
+        inviteToBBM : function (success, fail, args) {
+            var gid,
+                done,
+                cancel,
+                details =  {},
+                callback = function (e) {
+                    if (e) {
+                        fail(-1, "invocation failure: " + e);
+                    }
+                    else {
+                        success();
+                    }
+                };
+
+            gid = bbm.getgid();
+            details.gid = gid;
+            qnx.webplatform.getApplication().cards.bbm.inviteToBBM.open(details, done, cancel, callback);
+        },
+
+        inviteToBBMFromConnections : function (success, fail, args) {
+            var gid,
+                done,
+                cancel,
+                details =  {},
+                callback = function (e) {
+                    if (e) {
+                        fail(-1, "invocation failure: " + e);
+                    }
+                    else {
+                        success();
+                    }
+                };
+
+            gid = bbm.getgid();
+            details.gid = gid;
+            qnx.webplatform.getApplication().cards.bbm.inviteToBBMFromConnections.open(details, done, cancel, callback);
+        },
     }
 };
