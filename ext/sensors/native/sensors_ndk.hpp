@@ -1,0 +1,67 @@
+/*
+* Copyright 2012 Research In Motion Limited.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+#ifndef SENSORS_NDK_HPP_
+#define SENSORS_NDK_HPP_
+
+#include <json/value.h>
+#include <pthread.h>
+#include <sensor/libsensor.h>
+#include <map>
+#include <string>
+
+class Sensors;
+
+namespace webworks {
+
+typedef std::map<std::string, int> SensorTypeMap;
+typedef std::map<int, sensor_t*> ActiveSensorMap;
+
+struct SensorConfig {
+    std::string sensor;
+    unsigned int delay;
+    bool background;
+    bool batching;
+    bool queue;
+    bool reducedReporting;
+};
+
+class SensorsNDK {
+public:
+    explicit SensorsNDK(Sensors *parent = NULL);
+    ~SensorsNDK();
+    void StartEvents();
+    void StopEvents();
+    void StartSensor(SensorConfig *sensor);
+    void StopSensor(std::string sensor);
+    static void* SensorThread(void *args);
+private:
+    Sensors *m_pParent;
+    SensorTypeMap _sensorTypeMap;
+    static ActiveSensorMap m_activeSensors;
+    pthread_t m_thread;
+    struct sigevent m_sigEvent;
+    static int m_sensorChannel;
+    static int m_coid;
+    static bool m_sensorsEnabled;
+    static pthread_mutex_t m_lock;
+    static void stopActiveSensor(sensor_type_e sensorType);
+    void createSensorMap();
+};
+
+} // namespace webworks
+
+#endif /* SENSORS_NDK_HPP_ */
