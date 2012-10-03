@@ -47,10 +47,17 @@ function removeItem(success, fail, args, env) {
     _overlayWebView.contextMenu.removeItem(success, fail, args, env);
 }
 
+function setCustomContextAttributes(success, fail, args, env) {
+    args.contextId = JSON.parse(decodeURIComponent(args.contextId));
+    args.request = JSON.parse(decodeURIComponent(args.request));
+    _overlayWebView.contextMenu.setCustomContextAttributes(success, fail, args, env);
+}
+
 contextmenu = {
     enabled: enabled,
     addItem: addItem,
-    removeItem: removeItem
+    removeItem: removeItem,
+    setCustomContextAttributes: setCustomContextAttributes
 };
 
 qnx.webplatform.getController().addEventListener('ui.init', function () {
