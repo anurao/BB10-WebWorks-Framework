@@ -20,7 +20,7 @@ var _extDir = __dirname + "./../../../../ext",
     client,
     mockedWebworks = {
         execSync: jasmine.createSpy("webworks.execSync"),
-        execAsync: jasmine.createSpy("webworks.execAsync"),
+        execSync: jasmine.createSpy("webworks.execSync"),
         defineReadOnlyField: jasmine.createSpy(),
         event: {
             isOn: jasmine.createSpy("webworks.event.isOn"),
@@ -53,11 +53,11 @@ describe("invoke.card client", function () {
         });
         it("should call execAsyn with correct mode", function () {
             client.invokeCamera("photo");
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "photo"});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "photo"});
             client.invokeCamera("video");
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "video"});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "video"});
             client.invokeCamera("full");
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "full"});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invokeCamera", {mode: "full"});
         });
         it("should register all the events", function () {
             client.invokeCamera("photo", done, cancel, invokeCallback);
@@ -97,19 +97,19 @@ describe("invoke.card client", function () {
         it("should call execAsyn with correct mode", function () {
             details = { mode: "Picker" };
             client.invokeFilePicker(details);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
 
             details = { mode: "PickerMultiple" };
             client.invokeFilePicker(details);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
 
             details = { mode: "Saver" };
             client.invokeFilePicker(details);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
 
             details = { mode: "SaverMultiple" };
             client.invokeFilePicker(details);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invokeFilePicker", {options: details});
         });
         it("should register all the events", function () {
             details = { mode: "Picker" };

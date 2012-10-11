@@ -20,7 +20,7 @@ var _extDir = __dirname + "./../../../../ext",
     client,
     mockedWebworks = {
         execSync: jasmine.createSpy("webworks.execSync"),
-        execAsync: jasmine.createSpy("webworks.execAsync"),
+        execSync: jasmine.createSpy("webworks.execSync"),
         defineReadOnlyField: jasmine.createSpy(),
         event: {
             isOn: jasmine.createSpy("webworks.event.isOn")
@@ -57,7 +57,7 @@ describe("invoke client", function () {
             expect(onError).toHaveBeenCalled();
         });
 
-        it("should call once and execAsync", function () {
+        it("should call once and execSync", function () {
             var request = {
                     target: "abc.xyz"
                 },
@@ -66,7 +66,7 @@ describe("invoke client", function () {
             client.invoke(request, callback);
 
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, "invoke.invokeEventId", jasmine.any(Function));
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invoke", {"request": request});
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invoke", {"request": request});
         });
 
         it("should encode data to base64 string", function () {
@@ -79,7 +79,7 @@ describe("invoke client", function () {
             client.invoke(request, callback);
 
             expect(window.btoa).toHaveBeenCalledWith("my string");
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "invoke", {
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "invoke", {
                 "request": {
                     target: request.target,
                     data: "base64 string"
@@ -134,7 +134,7 @@ describe("invoke client", function () {
                 mockedWebworks.event.handler[eventId] = func;
             });
 
-            mockedWebworks.execAsync.andCallFake(function (id, action, args) {
+            mockedWebworks.execSync.andCallFake(function (id, action, args) {
 
                 if (id && id === _ID && action && action === "query") {
                     var _queryEventId = "invoke.queryEventId";
@@ -169,7 +169,7 @@ describe("invoke client", function () {
 
             client.query(request, onSuccess, onError);
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, "invoke.queryEventId", jasmine.any(Function));
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "query", {"request": request });
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "query", {"request": request });
         });
 
         it("should call success callback if the invocation is successfull", function () {
@@ -182,7 +182,7 @@ describe("invoke client", function () {
                 onError = jasmine.createSpy("client onError");
 
             client.query(request, onSuccess, onError);
-            expect(window.webworks.execAsync).toHaveBeenCalledWith(_ID, "query", {"request": request});
+            expect(window.webworks.execSync).toHaveBeenCalledWith(_ID, "query", {"request": request});
             expect(onSuccess).toHaveBeenCalledWith(jasmine.any(Object));
             expect(onError).not.toHaveBeenCalled();
         });

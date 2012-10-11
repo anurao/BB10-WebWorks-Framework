@@ -32,7 +32,7 @@ describe("notification client creates Notification object attached to window", f
 
     beforeEach(function () {
         mockedWebworks = {
-            execAsync: jasmine.createSpy("webworks.execAsync"),
+            execSync: jasmine.createSpy("webworks.execSync"),
             defineReadOnlyField: jasmine.createSpy("webworks.defineReadOnlyField"),
             event: {
                 isOn : jasmine.createSpy("webworks.event.isOn"),
@@ -98,22 +98,22 @@ describe("notification client creates Notification object attached to window", f
         it("should call execAync when Notification object is created", function () {
             new Notification("N Title");
 
-            expect(window.webworks.execAsync).toHaveBeenCalledWith(_ID, "notify", jasmine.any(Object));
-            expect(window.webworks.execAsync.mostRecentCall.args[2].id).toBeDefined();
-            expect(window.webworks.execAsync.mostRecentCall.args[2].title).toBeDefined();
-            expect(window.webworks.execAsync.mostRecentCall.args[2].options).toBeDefined();
-            expect(typeof window.webworks.execAsync.mostRecentCall.args[2].options).toEqual("object");
-            expect(window.webworks.execAsync.mostRecentCall.args[2].options.tag).toBeDefined();
+            expect(window.webworks.execSync).toHaveBeenCalledWith(_ID, "notify", jasmine.any(Object));
+            expect(window.webworks.execSync.mostRecentCall.args[2].id).toBeDefined();
+            expect(window.webworks.execSync.mostRecentCall.args[2].title).toBeDefined();
+            expect(window.webworks.execSync.mostRecentCall.args[2].options).toBeDefined();
+            expect(typeof window.webworks.execSync.mostRecentCall.args[2].options).toEqual("object");
+            expect(window.webworks.execSync.mostRecentCall.args[2].options.tag).toBeDefined();
         });
 
         it("should call execAync with all required fields when calling Notification constructor", function () {
             new Notification("N Title");
 
-            expect(window.webworks.execAsync.mostRecentCall.args[2].id).toBeDefined();
-            expect(window.webworks.execAsync.mostRecentCall.args[2].title).toBeDefined();
-            expect(window.webworks.execAsync.mostRecentCall.args[2].options).toBeDefined();
-            expect(typeof window.webworks.execAsync.mostRecentCall.args[2].options).toEqual("object");
-            expect(window.webworks.execAsync.mostRecentCall.args[2].options.tag).toBeDefined();
+            expect(window.webworks.execSync.mostRecentCall.args[2].id).toBeDefined();
+            expect(window.webworks.execSync.mostRecentCall.args[2].title).toBeDefined();
+            expect(window.webworks.execSync.mostRecentCall.args[2].options).toBeDefined();
+            expect(typeof window.webworks.execSync.mostRecentCall.args[2].options).toEqual("object");
+            expect(window.webworks.execSync.mostRecentCall.args[2].options.tag).toBeDefined();
         });
 
         it("should notify by calling 'once' event when there is a callback(s) provided", function () {
@@ -136,55 +136,55 @@ describe("notification client creates Notification object attached to window", f
     });
 
     describe("'remove' method", function () {
-        it("should call execAsync when 'remove' method called", function () {
+        it("should call execSync when 'remove' method called", function () {
             Notification.remove("TheTag");
 
-            expect(window.webworks.execAsync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
+            expect(window.webworks.execSync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
         });
 
-        it("should call execAsync with tag when 'remove' method called", function () {
+        it("should call execSync with tag when 'remove' method called", function () {
             var tag = "TheTag";
 
             Notification.remove(tag);
 
-            expect(window.webworks.execAsync.mostRecentCall.args[2].tag).toBeDefined();
-            expect(window.webworks.execAsync.mostRecentCall.args[2].tag).toEqual(tag);
+            expect(window.webworks.execSync.mostRecentCall.args[2].tag).toBeDefined();
+            expect(window.webworks.execSync.mostRecentCall.args[2].tag).toEqual(tag);
         });
 
 
-        it("should not call execAsync when not tag passed to 'remove'", function () {
+        it("should not call execSync when not tag passed to 'remove'", function () {
             Notification.remove();
 
-            expect(window.webworks.execAsync).not.toHaveBeenCalled();
+            expect(window.webworks.execSync).not.toHaveBeenCalled();
         });
     });
 
     describe("'close' method", function () {
-        it("should call execAsync with for method 'remove' when 'close' method is called", function () {
+        it("should call execSync with for method 'remove' when 'close' method is called", function () {
             var notification = new Notification("TheTitle");
 
             notification.close();
 
-            expect(window.webworks.execAsync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
+            expect(window.webworks.execSync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
         });
 
-        it("should call execAsync with corresponding tag when 'close' method called", function () {
+        it("should call execSync with corresponding tag when 'close' method called", function () {
             var tag = "TheTag",
                 notification = new Notification("TheTitle", {'tag': tag});
 
             notification.close();
 
-            expect(window.webworks.execAsync.mostRecentCall.args[2].tag).toBeDefined();
-            expect(window.webworks.execAsync.mostRecentCall.args[2].tag).toEqual(tag);
+            expect(window.webworks.execSync.mostRecentCall.args[2].tag).toBeDefined();
+            expect(window.webworks.execSync.mostRecentCall.args[2].tag).toEqual(tag);
         });
 
-        it("should always call execAsync with tag set even if no tag was provided to 'close' method", function () {
+        it("should always call execSync with tag set even if no tag was provided to 'close' method", function () {
             var notification = new Notification("TheTitle");
-            window.webworks.execAsync.reset();
+            window.webworks.execSync.reset();
 
             notification.close();
-            expect(window.webworks.execAsync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
-            expect(window.webworks.execAsync.mostRecentCall.args[2].tag).toBeDefined();
+            expect(window.webworks.execSync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
+            expect(window.webworks.execSync.mostRecentCall.args[2].tag).toBeDefined();
         });
     });
 });

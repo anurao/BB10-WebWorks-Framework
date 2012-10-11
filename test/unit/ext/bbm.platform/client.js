@@ -19,7 +19,7 @@ var root = __dirname + "/../../../../",
     client = null,
     mockedWebworks = {
         execSync: jasmine.createSpy(),
-        execAsync: jasmine.createSpy(),
+        execSync: jasmine.createSpy(),
         event: { once : jasmine.createSpy(),
                  isOn : jasmine.createSpy() }
     };
@@ -36,37 +36,37 @@ describe("bbm.platform", function () {
             var options = { uuid : "blah" };
 
             client.register(options);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "register", { "options" : options });
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "register", { "options" : options });
         });
     });
 
     describe("bbm.platform.self", function () { 
-        it("getDisplayPicture calls execAsync", function () {
+        it("getDisplayPicture calls execSync", function () {
             client.self.getDisplayPicture(function (img) { });
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "self/getDisplayPicture", { "eventId" : "bbm.self.displayPicture" });
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "self/getDisplayPicture", { "eventId" : "bbm.self.displayPicture" });
         });
         
-        it("setStatus calls execAsync", function () {
+        it("setStatus calls execSync", function () {
             client.self.setStatus("available", "Hello");
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "self/setStatus", { "status" : "available", "statusMessage" : "Hello" });
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "self/setStatus", { "status" : "available", "statusMessage" : "Hello" });
         });
 
-        it("setPersonalMessage calls execAsync", function () {
+        it("setPersonalMessage calls execSync", function () {
             client.self.setPersonalMessage("Hello World");
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "self/setPersonalMessage", { "personalMessage" : "Hello World" });
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "self/setPersonalMessage", { "personalMessage" : "Hello World" });
         });
 
-        it("setDisplayPicture calls execAsync", function () {
+        it("setDisplayPicture calls execSync", function () {
             client.self.setDisplayPicture("/tmp/avatar.gif");
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "self/setDisplayPicture", { "displayPicture" : "/tmp/avatar.gif" });
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "self/setDisplayPicture", { "displayPicture" : "/tmp/avatar.gif" });
         });
 
     });
 
     describe("bbm.platform.users", function () {
-        it("inviteToDownload calls execAsync", function () {
+        it("inviteToDownload calls execSync", function () {
             client.users.inviteToDownload();
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "users/inviteToDownload");
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "users/inviteToDownload");
         });
     });
 });

@@ -28,7 +28,7 @@ describe("pim.contacts Contact", function () {
         GLOBAL.window.webworks = mockedWebworks;
         Contact = require(_apiDir + "/Contact");
         ContactError = require(_apiDir + "/ContactError");
-        mockedWebworks.execAsync = jasmine.createSpy("webworks.execAsync");
+        mockedWebworks.execSync = jasmine.createSpy("webworks.execSync");
     });
 
     afterEach(function () {
@@ -96,7 +96,7 @@ describe("pim.contacts Contact", function () {
 
             contact.save(onSaveSuccess, onSaveError);
 
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "save", jasmine.any(Object));
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "save", jasmine.any(Object));
             expect(onSaveSuccess).toHaveBeenCalledWith(new Contact({"id": "0"}));
             expect(onSaveError).not.toHaveBeenCalled();
         });
@@ -180,9 +180,9 @@ describe("pim.contacts Contact", function () {
             contact.save(onSaveSuccess, onSaveError);
 
             expect(once).toHaveBeenCalledWith("blackberry.pim.contacts", jasmine.any(String), jasmine.any(Function));
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "save", jasmine.any(Object));
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "save", jasmine.any(Object));
 
-            result = mockedWebworks.execAsync.mostRecentCall.args[2];
+            result = mockedWebworks.execSync.mostRecentCall.args[2];
             expect(result.birthday).toBe("Thu Jan 01 1970");
             expect(result.anniversary).toBe("Sun Jul 01 1990");
         });
@@ -241,7 +241,7 @@ describe("pim.contacts Contact", function () {
 
             contact.remove(onRemoveSuccess, onRemoveError);
 
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "remove", jasmine.any(Object));
             expect(onRemoveSuccess).toHaveBeenCalledWith();
             expect(onRemoveError).not.toHaveBeenCalled();
         });

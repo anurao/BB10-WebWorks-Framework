@@ -25,7 +25,7 @@ var _extDir = __dirname + "./../../../../ext",
     ContactOrganization = client.ContactOrganization,
     ContactPhoto = client.ContactPhoto,
     mockedWebworks = {
-        execAsync: jasmine.createSpy("webworks.execAsync"),
+        execSync: jasmine.createSpy("webworks.execSync"),
         event: {
             once: jasmine.createSpy("webworks.event.once").andCallFake(function (service, eventId, callback) {
                 callback({
@@ -49,7 +49,7 @@ describe("pim.contacts client", function () {
     });
 
     describe("find", function () {
-        it("execAsync and once should have been called for pim.contacts.find() if correct arguments are passed", function () {
+        it("execSync and once should have been called for pim.contacts.find() if correct arguments are passed", function () {
             var successCb = jasmine.createSpy(),
                 errorCb = jasmine.createSpy();
 
@@ -61,7 +61,7 @@ describe("pim.contacts client", function () {
                 null, // sort
                 5 // limit
             ), successCb, errorCb);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "find", jasmine.any(Object));
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "find", jasmine.any(Object));
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), jasmine.any(Function));
             expect(successCb).toHaveBeenCalledWith([]);
             expect(errorCb).not.toHaveBeenCalled();

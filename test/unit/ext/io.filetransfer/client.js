@@ -28,7 +28,7 @@ var root = __dirname + "/../../../../",
 
 describe("io.filetransfer client", function () {
     beforeEach(function () {
-        mockedWebworks.execAsync = jasmine.createSpy();
+        mockedWebworks.execSync = jasmine.createSpy();
         mockedWebworks.defineReadOnlyField = jasmine.createSpy();
         mockedWebworks.event = {
             once : jasmine.createSpy(),
@@ -69,7 +69,7 @@ describe("io.filetransfer client", function () {
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), jasmine.any(Function));
         });
 
-        it("should call webworks.execAsync", function () {
+        it("should call webworks.execSync", function () {
             var expected_args = {
                 "_eventId": jasmine.any(String),
                 "filePath": filePath,
@@ -78,7 +78,7 @@ describe("io.filetransfer client", function () {
             };
 
             client.upload(filePath, server, callback, callback, options);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "upload", expected_args);
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "upload", expected_args);
         });
 
         it("should call success callback on success event", function () {
@@ -137,7 +137,7 @@ describe("io.filetransfer client", function () {
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), jasmine.any(Function));
         });
 
-        it("should call webworks.execAsync", function () {
+        it("should call webworks.execSync", function () {
             var expected_args = {
                 "_eventId": jasmine.any(String),
                 "source": source,
@@ -145,7 +145,7 @@ describe("io.filetransfer client", function () {
             };
 
             client.download(source, target, callback, callback);
-            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "download", expected_args);
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "download", expected_args);
         });
 
         it("should call success callback on success event", function () {
