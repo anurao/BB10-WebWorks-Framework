@@ -59,7 +59,7 @@ _self.upload = function (filePath, server, successCallback, errorCallback, optio
         }
     });
 
-    window.webworks.execAsync(_ID, "upload", args);
+    window.webworks.execSync(_ID, "upload", args);
 };
 
 _self.download = function (source, target, successCallback, errorCallback) {
@@ -90,7 +90,7 @@ _self.download = function (source, target, successCallback, errorCallback) {
         }
     });
 
-    window.webworks.execAsync(_ID, "download", args);
+    window.webworks.execSync(_ID, "download", args);
 };
 
 window.webworks.defineReadOnlyField(_self, "FILE_NOT_FOUND_ERR", 1);

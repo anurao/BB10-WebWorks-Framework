@@ -31,7 +31,7 @@ _self.customAskAsync = function (message, buttons, callback, settings) {
     }
 
     createEventHandler(callback);
-    return window.webworks.execAsync(_ID, "customAskAsync", args);
+    return window.webworks.execSync(_ID, "customAskAsync", args);
 };
 
 _self.standardAskAsync = function (message, type, callback, settings) {
@@ -41,7 +41,7 @@ _self.standardAskAsync = function (message, type, callback, settings) {
     }
 
     createEventHandler(callback);
-    return window.webworks.execAsync(_ID, "standardAskAsync", args);
+    return window.webworks.execSync(_ID, "standardAskAsync", args);
 };
 
 window.webworks.defineReadOnlyField(_self, "D_OK", 0);

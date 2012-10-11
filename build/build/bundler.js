@@ -70,6 +70,9 @@ module.exports = {
         //Close closure
         post_injection += "\n}());";
 
+        //include rpc client
+        post_injection += include("dependencies/webplatform/framework/lib/rpcClient.js");
+
         //Hash the sections
         shasum.update((pre_injection + post_injection).replace(/\\r\\n/g, "\\n"));//convert CRLF to LF
         wwHash = shasum.digest('hex');

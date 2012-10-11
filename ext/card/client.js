@@ -33,7 +33,7 @@ _self.invokeCamera = function (mode, done, cancel, invokeCallback) {
     if (!window.webworks.event.isOn(_cameraInvokeEventId)) {
         window.webworks.event.once(_ID, _cameraInvokeEventId, invokeCallback);
     }
-    return window.webworks.execAsync(_ID, "invokeCamera", {mode: mode || ""});
+    return window.webworks.execSync(_ID, "invokeCamera", {mode: mode || ""});
 };
 
 _self.invokeFilePicker = function (options, done, cancel, invokeCallback) {
@@ -62,7 +62,7 @@ _self.invokeFilePicker = function (options, done, cancel, invokeCallback) {
     if (!window.webworks.event.isOn(_filePickerInvokeEventId)) {
         window.webworks.event.once(_ID, _filePickerInvokeEventId, invokeCallback);
     }
-    return window.webworks.execAsync(_ID, "invokeFilePicker", {options: options || ""});
+    return window.webworks.execSync(_ID, "invokeFilePicker", {options: options || ""});
 };
 
 //CAMERA PROPERTIES

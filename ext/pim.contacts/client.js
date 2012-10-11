@@ -136,7 +136,7 @@ _self.find = function (contactFields, findOptions, onFindSuccess, onFindError) {
 
     window.webworks.event.once(_ID, eventId, callback);
 
-    return window.webworks.execAsync(_ID, "find", {
+    return window.webworks.execSync(_ID, "find", {
         "_eventId": eventId,
         "fields": contactFields,
         "options": findOptions

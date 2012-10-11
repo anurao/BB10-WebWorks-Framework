@@ -73,7 +73,7 @@ Notification = function (title, options) {
         }
     }
 
-    window.webworks.execAsync(_ID, "notify", {'id': id, 'title': title, 'options': options});
+    window.webworks.execSync(_ID, "notify", {'id': id, 'title': title, 'options': options});
 
     this.getId = function () {
         return id;
@@ -86,13 +86,13 @@ Notification.requestPermission = function (callback) {
 
 Notification.remove = function (tag) {
     if (tag) {
-        window.webworks.execAsync(_ID, "remove", {'tag': tag});
+        window.webworks.execSync(_ID, "remove", {'tag': tag});
     }
 };
 
 Notification.prototype.close = function () {
     if (this.options && this.options.tag) {
-        window.webworks.execAsync(_ID, "remove", {'tag': this.options.tag});
+        window.webworks.execSync(_ID, "remove", {'tag': this.options.tag});
     }
 };
 

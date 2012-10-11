@@ -61,7 +61,7 @@ _self.invoke = function (request, onSuccess, onError) {
         window.webworks.event.once(_ID, _invokeEventId, callback);
     }
 
-    return window.webworks.execAsync(_ID, "invoke", {request: request});
+    return window.webworks.execSync(_ID, "invoke", {request: request});
 };
 
 _self.query = function (request, onSuccess, onError) {
@@ -80,7 +80,7 @@ _self.query = function (request, onSuccess, onError) {
         window.webworks.event.once(_ID, _queryEventId, queryCallback);
     }
 
-    window.webworks.execAsync(_ID, "query", {request: request});
+    window.webworks.execSync(_ID, "query", {request: request});
 };
 
 _self.closeChildCard = function () {

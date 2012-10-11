@@ -55,11 +55,11 @@ contextmenu.addItem = function (contexts, action, callback) {
         _listeningForCallbacks = true;
         listen();
     }
-    window.webworks.execAsync(_ID, 'addItem', {contexts: contexts, action: action});
+    window.webworks.execSync(_ID, 'addItem', {contexts: contexts, action: action});
 };
 
 contextmenu.removeItem = function (contexts, actionId) {
-    window.webworks.execAsync(_ID, 'removeItem', {contexts: contexts, actionId: actionId});
+    window.webworks.execSync(_ID, 'removeItem', {contexts: contexts, actionId: actionId});
     delete _storedCallbacks[actionId];
 };
 

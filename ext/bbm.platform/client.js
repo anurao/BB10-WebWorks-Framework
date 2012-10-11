@@ -49,7 +49,7 @@ function createEventHandler(callback, eventId) {
 
 _self.register = function (options) {
     var args = { "options" : options };
-    return window.webworks.execAsync(_ID, "register", args);
+    return window.webworks.execSync(_ID, "register", args);
 };
 
 defineGetter(_self.self, "self/appVersion");
@@ -64,26 +64,26 @@ defineGetter(_self.self, "self/statusMessage");
 _self.self.getDisplayPicture = function (callback) {
     var args = { "eventId" : _displayPictureEventId };
     createEventHandler(callback, _displayPictureEventId);
-    return window.webworks.execAsync(_ID, "self/getDisplayPicture", args);
+    return window.webworks.execSync(_ID, "self/getDisplayPicture", args);
 };
 
 _self.self.setStatus = function (status, statusMessage) {
     var args = { "status" : status, "statusMessage" : statusMessage };
-    return window.webworks.execAsync(_ID, "self/setStatus", args);
+    return window.webworks.execSync(_ID, "self/setStatus", args);
 };
 
 _self.self.setPersonalMessage = function (personalMessage) {
     var args = { "personalMessage" : personalMessage };
-    return window.webworks.execAsync(_ID, "self/setPersonalMessage", args);
+    return window.webworks.execSync(_ID, "self/setPersonalMessage", args);
 };
 
 _self.self.setDisplayPicture = function (displayPicture) {
     var args = { "displayPicture" : displayPicture };
-    return window.webworks.execAsync(_ID, "self/setDisplayPicture", args);
+    return window.webworks.execSync(_ID, "self/setDisplayPicture", args);
 };
 
 _self.users.inviteToDownload = function () {
-    return window.webworks.execAsync(_ID, "users/inviteToDownload");
+    return window.webworks.execSync(_ID, "users/inviteToDownload");
 };
 
 window.webworks.execSync(_ID, "registerEvents", null);

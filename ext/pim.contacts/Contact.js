@@ -254,7 +254,7 @@ Contact.prototype.save = function (onSaveSuccess, onSaveError) {
     };
 
     window.webworks.event.once(_ID, args._eventId, saveCallback);
-    return window.webworks.execAsync(_ID, "save", args);
+    return window.webworks.execSync(_ID, "save", args);
 };
 
 Contact.prototype.remove = function (onRemoveSuccess, onRemoveError) {
@@ -291,7 +291,7 @@ Contact.prototype.remove = function (onRemoveSuccess, onRemoveError) {
     };
 
     window.webworks.event.once(_ID, args._eventId, removeCallback);
-    return window.webworks.execAsync(_ID, "remove", args);
+    return window.webworks.execSync(_ID, "remove", args);
 };
 
 Contact.prototype.clone = function () {
