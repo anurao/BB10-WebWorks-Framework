@@ -22,6 +22,7 @@
 #include <QObject>
 #include "timezone_js.hpp"
 #include "qobj.hpp"
+#include "qobj.moc"
 
 Timezone::Timezone(const std::string& id) : m_id(id)
 {
@@ -71,15 +72,14 @@ std::string Timezone::InvokeMethod(const std::string& command)
         strCommand = command;
         obj = new Json::Value;
     }
-/*
+
     TimezoneThreadInfo *thread_info = new TimezoneThreadInfo;
     thread_info->parent = this;
     thread_info->jsonObj = obj;
     thread_info->eventId = obj->removeMember("_eventId").asString();
-*/
+
     QThread* thread = new QThread;
-    MyQObj* worker = new MyQObj;
-    //worker->setThreadInfo(*thread_info);
+    MyQObj* worker = new MyQObj(*thread_info);
     worker->moveToThread(thread);
     QObject::connect(thread, SIGNAL(started()), worker, SLOT(process()));
     QObject::connect(worker, SIGNAL(finished()), thread, SLOT(quit()));

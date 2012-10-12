@@ -22,16 +22,6 @@
 #include <string>
 #include "../common/plugin.h"
 
-class Timezone;
-
-//typedef void* ThreadFunc(void *args);
-
-struct TimezoneThreadInfo {
-    Timezone *parent;
-    Json::Value *jsonObj;
-    std::string eventId;
-};
-
 class Timezone : public JSExt
 {
 public:
@@ -48,7 +38,7 @@ private:
 //    bool startThread(ThreadFunc threadFunction, Json::Value *jsonObj);
 
     std::string m_id;
-    TimezoneThreadInfo* m_threadInfo;
+    //TimezoneThreadInfo* m_threadInfo;
     //Json::Value m_resultObj;
 };
 
