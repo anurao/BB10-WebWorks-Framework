@@ -19,6 +19,14 @@ tags
 target/
 clientFiles/
 lib/webworks-info.js
+/ext/*/native/arm/*/*.o
+/ext/*/native/arm/*/*.so
+/ext/*/native/arm/*/*.a
+/ext/*/native/arm/*/test
+/ext/*/native/x86/*/*.a
+/ext/*/native/x86/*/*.o
+/ext/*/native/x86/*/*.so
+/ext/*/native/x86/*/test
 
 #Test-App generation
 test/test-app/wwTest.zip
