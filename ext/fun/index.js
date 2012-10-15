@@ -71,7 +71,7 @@ JNEXT.Timezone = function ()
             return false;
         }
 
-        self.m_id = JNEXT.createObject("timezone.Timezone");
+        self.m_id = JNEXT.createObject("libtimezone.Timezone");
 
         if (self.m_id === "") {
             return false;

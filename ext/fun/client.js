@@ -21,7 +21,7 @@ var _self = {},
 _self.find = function (onFindSuccess, onFindError) {
     var eventId = utils.guid();
 
-    window.webworks.event.once(_ID, eventId, callback);
+    window.webworks.event.once(_ID, eventId, onFindSuccess);
 
     return window.webworks.execAsync(_ID, "find", {
         "_eventId": eventId,
