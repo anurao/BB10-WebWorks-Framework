@@ -26,7 +26,7 @@ var Whitelist = require("../../lib/policy/whitelist").Whitelist,
         batterycritical: {
             eventName: "batterycritical",
             eventDetailsArr: [{
-                path: "/pps/services/power/battery?wait,delta",
+                path: "/pps/services/BattMgr/status?wait,delta",
                 fieldNameArr: [{
                     eventName: "StateOfCharge",
                     paramName: "level",
@@ -34,56 +34,35 @@ var Whitelist = require("../../lib/policy/whitelist").Whitelist,
                     reset: function () {
                         this.setFieldValue(null);
                     },
-                    setFieldValue: function (value) {
-                        this.fieldValue = value ? this.formatValue(value) : value;
+                    hasAttribute: function (data) {
+                        return data && data.BatteryInfo && data.BatteryInfo.BatteryStatus && data.BatteryInfo.BatteryStatus.StateOfCharge;
                     },
                     formatValue: function (str) {
                         return parseInt(str, 10);
                     },
-                    skipTrigger: function (value) {
+                    getFormattedAttributeValue: function (data) {
+                        var value;
+
+                        if (data && data.BatteryInfo && data.BatteryInfo.BatteryStatus) {
+                            value = data.BatteryInfo.BatteryStatus.StateOfCharge;
+                        }
+
+                        return value ? this.formatValue(value) : value;
+                    },
+                    getValueForReturn: function (data) {
+                        var value = this.getFormattedAttributeValue(data);
+
+                        this.fieldValue = value;
+
+                        return value;
+                    },
+                    setFieldValue: function (data) {
+                        this.fieldValue = this.getFormattedAttributeValue(data);
+                    },
+                    skipTrigger: function (data) {
                         var threshold = 4,
-                            formattedValue = this.formatValue(value),
-                            result = (formattedValue > threshold) || (this.fieldValue && this.fieldValue <= threshold);
-
-                        this.fieldValue = formattedValue;
-
-                        return result;
-                    }
-                }]
-            }, {
-                path: "/pps/services/power/charger?wait,delta",
-                disableOnChange: true,
-                fieldNameArr: [{
-                    eventName: "ChargingState",
-                    paramName: "isPlugged",
-                    formatValue: function (str) {
-                        return (str === "NC" ? false : true);
-                    }
-                }]
-            }],
-            mode: 0
-        },
-        batterylow: {
-            eventName: "batterylow",
-            eventDetailsArr: [{
-                path: "/pps/services/power/battery?wait,delta",
-                fieldNameArr: [{
-                    eventName: "StateOfCharge",
-                    paramName: "level",
-                    fieldValue: null,
-                    reset: function () {
-                        this.setFieldValue(null);
-                    },
-                    setFieldValue: function (value) {
-                        this.fieldValue = value ? this.formatValue(value) : value;
-                    },
-                    formatValue: function (str) {
-                        return parseInt(str, 10);
-                    },
-                    skipTrigger: function (value) {
-                        var threshold = 14,
-                            formattedValue = this.formatValue(value),
-                            result = (formattedValue > threshold) || (this.fieldValue && this.fieldValue <= threshold);
+                            value = this.getFormattedAttributeValue(data),
+                            result = (value > threshold) || (this.fieldValue && this.fieldValue <= threshold);
 
                         this.fieldValue = value;
 
@@ -91,14 +70,111 @@ var Whitelist = require("../../lib/policy/whitelist").Whitelist,
                     }
                 }]
             }, {
-                path: "/pps/services/power/charger?wait,delta",
+                path: "/pps/services/BattMgr/status?wait,delta",
                 disableOnChange: true,
                 fieldNameArr: [{
-                    eventName: "ChargingState",
+                    eventName: "ChargerInfo",
                     paramName: "isPlugged",
                     formatValue: function (str) {
-                        return (str === "NC" ? false : true);
+                        return (str === "NONE" ? false : true);
+                    },
+                    hasAttribute: function (data) {
+                        return data && data.ChargerInfo;
+                    },
+                    getFormattedAttributeValue: function (data) {
+                        var value;
+
+                        if (data) {
+                            value = data.ChargerInfo;
+                        }
+
+                        return value ? this.formatValue(value) : value;
+                    },
+                    getValueForReturn: function (data) {
+                        var value = this.getFormattedAttributeValue(data);
+
+                        this.fieldValue = value;
+
+                        return value;
+                    },
+                }]
+            }],
+            mode: 0
+        },
+        batterylow: {
+            eventName: "batterylow",
+            eventDetailsArr: [{
+                path: "/pps/services/BattMgr/status?wait,delta",
+                fieldNameArr: [{
+                    eventName: "StateOfCharge",
+                    paramName: "level",
+                    fieldValue: null,
+                    reset: function () {
+                        this.setFieldValue(null);
+                    },
+                    hasAttribute: function (data) {
+                        return data && data.BatteryInfo && data.BatteryInfo.BatteryStatus && data.BatteryInfo.BatteryStatus.StateOfCharge;
+                    },
+                    formatValue: function (str) {
+                        return parseInt(str, 10);
+                    },
+                    getFormattedAttributeValue: function (data) {
+                        var value;
+
+                        if (data && data.BatteryInfo && data.BatteryInfo.BatteryStatus) {
+                            value = data.BatteryInfo.BatteryStatus.StateOfCharge;
+                        }
+
+                        return value ? this.formatValue(value) : value;
+                    },
+                    getValueForReturn: function (data) {
+
+                        var value = this.getFormattedAttributeValue(data);
+                        this.fieldValue = value;
+
+                        return value;
+                    },
+                    setFieldValue: function (data) {
+                        this.fieldValue = this.getFormattedAttributeValue(data);
+                    },
+                    skipTrigger: function (data) {
+                        var threshold = 14,
+                            value = this.getFormattedAttributeValue(data),
+                            result = (value > threshold) || (this.fieldValue && this.fieldValue <= threshold);
+
+                        this.fieldValue = value;
+
+                        return result;
                     }
+                }]
+            }, {
+                path: "/pps/services/BattMgr/status?wait,delta",
+                disableOnChange: true,
+                fieldNameArr: [{
+                    eventName: "ChargerInfo",
+                    paramName: "isPlugged",
+                    formatValue: function (str) {
+                        return (str === "NONE" ? false : true);
+                    },
+                    hasAttribute: function (data) {
+                        return data && data.ChargerInfo;
+                    },
+                    getFormattedAttributeValue: function (data) {
+                        var value;
+
+                        if (data) {
+                            value = data.ChargerInfo;
+                        }
+
+                        return value ? this.formatValue(value) : value;
+                    },
+                    getValueForReturn: function (data) {
+                        var value = this.getFormattedAttributeValue(data);
+
+                        this.fieldValue = value;
+
+                        return value;
+                    },
                 }]
             }],
             mode: 0
@@ -106,21 +182,87 @@ var Whitelist = require("../../lib/policy/whitelist").Whitelist,
         batterystatus: {
             eventName: "batterystatus",
             eventDetailsArr: [{
-                path: "/pps/services/power/battery?wait,delta",
+                path: "/pps/services/BattMgr/status?wait,delta",
                 fieldNameArr: [{
                     eventName: "StateOfCharge",
                     paramName: "level",
+                    fieldValue: null,
+                    reset: function () {
+                        this.setFieldValue(null);
+                    },
+                    hasAttribute: function (data) {
+                        return data && data.BatteryInfo && data.BatteryInfo.BatteryStatus && data.BatteryInfo.BatteryStatus.StateOfCharge;
+                    },
                     formatValue: function (str) {
                         return parseInt(str, 10);
+                    },
+                    getFormattedAttributeValue: function (data) {
+                        var value;
+
+                        if (data && data.BatteryInfo && data.BatteryInfo.BatteryStatus) {
+                            value = data.BatteryInfo.BatteryStatus.StateOfCharge;
+                        }
+
+                        return value ? this.formatValue(value) : value;
+                    },
+                    getValueForReturn: function (data) {
+                        var value = this.getFormattedAttributeValue(data);
+                        this.fieldValue = value;
+
+                        return value;
+                    },
+                    setFieldValue: function (data) {
+                        this.fieldValue = this.getFormattedAttributeValue(data);
+                    },
+                    skipTrigger: function (data) {
+                        var value = this.getFormattedAttributeValue(data),
+                            result = this.fieldValue === value;
+
+                        this.fieldValue = value;
+
+                        return result;
                     }
                 }]
             }, {
-                path: "/pps/services/power/charger?wait,delta",
+                path: "/pps/services/BattMgr/status?wait,delta",
                 fieldNameArr: [{
-                    eventName: "ChargingState",
+                    eventName: "ChargerInfo",
                     paramName: "isPlugged",
+                    fieldValue: null,
+                    reset: function () {
+                        this.setFieldValue(null);
+                    },
+                    hasAttribute: function (data) {
+                        return data && data.ChargerInfo;
+                    },
                     formatValue: function (str) {
-                        return (str === "NC" ? false : true);
+                        return (str === "NONE" ? false : true);
+                    },
+                    getFormattedAttributeValue: function (data) {
+                        var value;
+
+                        if (data) {
+                            value = data.ChargerInfo;
+                        }
+
+                        return value ? this.formatValue(value) : value;
+                    },
+                    getValueForReturn: function (data) {
+                        var value = this.getFormattedAttributeValue(data);
+                        this.fieldValue = value;
+
+                        return value;
+                    },
+                    setFieldValue: function (data) {
+                        this.fieldValue = this.getFormattedAttributeValue(data);
+                    },
+                    skipTrigger: function (data) {
+                        var value = this.getFormattedAttributeValue(data),
+                            result = this.fieldValue === value;
+
+                        this.fieldValue = value;
+
+                        return result;
                     }
                 }]
             }],

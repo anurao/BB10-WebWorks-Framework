@@ -46,6 +46,12 @@ describe("ppsEvents", function () {
                         paramName: "returnField1",
                         formatValue: function () {
                             return 1;
+                        },
+                        hasAttribute: function (data) {
+                            return  data[this.eventName] ? true : false;
+                        },
+                        getValueForReturn: function (data) {
+                            return this.formatValue();
                         }
                     }]
                 }, {
@@ -55,6 +61,12 @@ describe("ppsEvents", function () {
                         paramName: "returnField2",
                         formatValue: function (str) {
                             return true;
+                        },
+                        hasAttribute: function (data) {
+                            return  data[this.eventName] ? true : false;
+                        },
+                        getValueForReturn: function (data) {
+                            return this.formatValue();
                         }
                     }]
                 }, {
@@ -64,6 +76,12 @@ describe("ppsEvents", function () {
                         paramName: "returnField3",
                         formatValue: function (str) {
                             return false;
+                        },
+                        hasAttribute: function (data) {
+                            return  data[this.eventName] ? true : false;
+                        },
+                        getValueForReturn: function (data) {
+                            return this.formatValue();
                         },
                         skipTrigger: function (value) {
                             return value === false;
@@ -77,6 +95,12 @@ describe("ppsEvents", function () {
                         paramName: "returnField4",
                         formatValue: function (str) {
                             return "Message";
+                        },
+                        hasAttribute: function (data) {
+                            return  data[this.eventName] ? true : false;
+                        },
+                        getValueForReturn: function (data) {
+                            return this.formatValue();
                         }
                     }]
                 }, {
@@ -91,6 +115,12 @@ describe("ppsEvents", function () {
                         },                        
                         formatValue: function (str) {
                             return 50;
+                        },
+                        hasAttribute: function (data) {
+                            return  data[this.eventName] ? true : false;
+                        },
+                        getValueForReturn: function (data) {
+                            return this.formatValue();
                         },
                         skipTrigger: function (value) {
                             return false;
@@ -113,7 +143,7 @@ describe("ppsEvents", function () {
     });
 
     // Positive test cases
-    describe("addEventListener positive test", function () {
+    describe("addEventListener", function () {
         it("should call appropriate ppsUtils methods", function () {
             var mockedPPSUtilsInst;
             
@@ -131,7 +161,7 @@ describe("ppsEvents", function () {
                 
             _ppsEvents.addEventListener(_actionMap.event, _actionMap.trigger);
             onChange = _actionMap.event.eventDetailsArr[index].ppsUtils.onChange;
-            onChange({changed: {Field1: true, Field3: true}});
+            onChange({changed: {Field1: true, Field3: true}, data: {Field1: 10, Field3: 20}});
             expect(_actionMap.event.eventDetailsArr[index].ppsUtils.read).toHaveBeenCalled();
             expect(_actionMap.trigger).toHaveBeenCalledWith({returnField1: 1, returnField2: true, returnField3: false, returnField4: "Message", returnField5: 50});
         });
@@ -142,20 +172,9 @@ describe("ppsEvents", function () {
                 
             _ppsEvents.addEventListener(_actionMap.event, _actionMap.trigger);
             onChange = _actionMap.event.eventDetailsArr[index].ppsUtils.onChange;
-            onChange({changed: {Field2: true, Field100: true}});
+            onChange({changed: {Field2: true, Field100: true}, data: {Field2: 10, Field100: 20}});
             expect(_actionMap.event.eventDetailsArr[index].ppsUtils.read).toHaveBeenCalled();
             expect(_actionMap.trigger).toHaveBeenCalledWith({returnField1: 1, returnField2: true, returnField3: false, returnField4: "Message", returnField5: 50});
-        });
-
-        it("should not invoke onChange callback when none of the looked up fields have been changed", function () {
-            var index = 0, // Corresponding ppsUtils instance handler of pps object that contains looked up field.
-                onChange;
-                
-            _ppsEvents.addEventListener(_actionMap.event, _actionMap.trigger);
-            onChange = _actionMap.event.eventDetailsArr[index].ppsUtils.onChange;
-            onChange({changed: {Field3: true, Field100: true}});
-            expect(_actionMap.event.eventDetailsArr[index].ppsUtils.read).not.toHaveBeenCalled();
-            expect(_actionMap.trigger).not.toHaveBeenCalled(); 
         });
 
         it("should have onChange method not defined when there is no interest to listen for changes on the field", function () {
@@ -174,11 +193,21 @@ describe("ppsEvents", function () {
                 
             _ppsEvents.addEventListener(_actionMap.event, _actionMap.trigger);
             onChange = _actionMap.event.eventDetailsArr[index].ppsUtils.onChange;
-            onChange({changed: {Field5: true, Field100: true}});
+            onChange({changed: {Field5: true, Field100: true}, data: {Field5: 50, Field100: "Something"}});
             expect(_actionMap.event.eventDetailsArr[index].ppsUtils.read).toHaveBeenCalled();
             expect(_actionMap.event.eventDetailsArr[index].fieldNameArr[0].fieldValue === 50).toBeTruthy();
         });
 
+        it("should NOT invoke onChange callback when none of the looked up fields have been changed", function () {
+            var index = 0, // Corresponding ppsUtils instance handler of pps object that contains looked up field.
+                onChange;
+
+            _ppsEvents.addEventListener(_actionMap.event, _actionMap.trigger);
+            onChange = _actionMap.event.eventDetailsArr[index].ppsUtils.onChange;
+            onChange({changed: {Field3: true, Field100: true}, data: {Field3: 10, Field100: 20}});
+            expect(_actionMap.event.eventDetailsArr[index].ppsUtils.read).not.toHaveBeenCalled();
+            expect(_actionMap.trigger).not.toHaveBeenCalled();
+        });
     });
 
     describe("removeEventListener positive test", function () {
@@ -212,7 +241,7 @@ describe("ppsEvents", function () {
                 
             _ppsEvents.addEventListener(_actionMap.event, _actionMap.trigger);
             onChange = _actionMap.event.eventDetailsArr[index].ppsUtils.onChange;
-            onChange({changed: {WrongStateOfCharge: true}});
+            onChange({changed: {WrongStateOfCharge: true}, data: {WrongStateOfCharge: "NONE"}});
             expect(_actionMap.event.eventDetailsArr[index].ppsUtils.read).not.toHaveBeenCalled();
             expect(_actionMap.trigger).not.toHaveBeenCalled(); 
         });
@@ -223,7 +252,7 @@ describe("ppsEvents", function () {
                 
             _ppsEvents.addEventListener(_actionMap.event, _actionMap.trigger);
             onChange = _actionMap.event.eventDetailsArr[index].ppsUtils.onChange;
-            onChange({changed: {WrongChargingState: true}});
+            onChange({changed: {WrongChargingState: true}, data: {WrongChargingState: "NONE"}});
             expect(_actionMap.event.eventDetailsArr[index].ppsUtils.read).not.toHaveBeenCalled();
             expect(_actionMap.trigger).not.toHaveBeenCalled(); 
         });
