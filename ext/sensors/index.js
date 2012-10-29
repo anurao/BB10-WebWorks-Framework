@@ -17,12 +17,97 @@
 var sensors = require("./sensorsJNEXT").sensors,
     _event = require("../../lib/event"),
     _utils = require("../../lib/utils"),
+    _sensorEvents = require("./sensorsEvents"),
     _actionMap = {
-        onsensor: {
-            context: require("./sensorsEvents"),
-            event: "onsensor",
-            trigger: function (args, obj) {
-                _event.trigger("onsensor", args, obj);
+        deviceaccelerometer: {
+            context: _sensorEvents,
+            event: "deviceaccelerometer",
+            trigger: function (obj) {
+                _event.trigger("deviceaccelerometer", obj);
+            }
+        },
+        devicemagnetometer: {
+            context: _sensorEvents,
+            event: "devicemagnetometer",
+            trigger: function (obj) {
+                _event.trigger("devicemagnetometer", obj);
+            }
+        },
+        devicegyroscope: {
+            context: _sensorEvents,
+            event: "devicegyroscope",
+            trigger: function (obj) {
+                _event.trigger("devicegyroscope", obj);
+            }
+        },
+        devicecompass: {
+            context: _sensorEvents,
+            event: "devicecompass",
+            trigger: function (obj) {
+                _event.trigger("devicecompass", obj);
+            }
+        },                        
+        deviceproximity: {
+            context: _sensorEvents,
+            event: "deviceproximity",
+            trigger: function (obj) {
+                _event.trigger("deviceproximity", obj);
+            }
+        },
+        devicelight: {
+            context: _sensorEvents,
+            event: "devicelight",
+            trigger: function (obj) {
+                _event.trigger("devicelight", obj);
+            }
+        },
+        devicegravity: {
+            context: _sensorEvents,
+            event: "devicegravity",
+            trigger: function (obj) {
+                _event.trigger("devicegravity", obj);
+            }
+        },
+        devicelinearacceleration: {
+            context: _sensorEvents,
+            event: "devicelinearacceleration",
+            trigger: function (obj) {
+                _event.trigger("devicelinearacceleration", obj);
+            }
+        },
+        devicerotationvector: {
+            context: _sensorEvents,
+            event: "devicerotationvector",
+            trigger: function (obj) {
+                _event.trigger("devicerotationvector", obj);
+            }
+        },
+        deviceorientation: {
+            context: _sensorEvents,
+            event: "deviceorientation",
+            trigger: function (obj) {
+                _event.trigger("deviceorientation", obj);
+            }
+        },        
+        deviceazimuthpitchroll: {
+            context: _sensorEvents,
+            event: "deviceazimuthpitchroll",
+            trigger: function (obj) {
+                _event.trigger("deviceazimuthpitchroll", obj);
+            }
+        },
+        devicefacedetect: {
+            context: _sensorEvents,
+            event: "devicefacedetect",
+            trigger: function (obj) {
+                _event.trigger("devicefacedetect", obj);
+            }
+        },
+        deviceholster: {
+            context: _sensorEvents,
+            event: "deviceholster",
+            trigger: function (obj) {
+                _event.trigger("deviceholster", obj);
             }
         }
     };
@@ -38,27 +123,14 @@ module.exports = {
         }
     },
 
-    startSensor: function (success, fail, args) {
+    setOptions: function (success, fail, args) {
         if (args.options) {
             args.options = JSON.parse(decodeURIComponent(args.options));
 
             if (args.options.sensor === "") {
                 fail(-1, "Must specify a sensor");
             }
-            success(sensors.startSensor(args.options));
-        } else {
-            fail(-1, "Need to specify arguments");
-        }
-    },
-
-    stopSensor: function (success, fail, args) {
-        if (args.options) {
-            args.options = JSON.parse(decodeURIComponent(args.options));
-
-            if (args.options.sensor === "") {
-                fail(-1, "Must specify a sensor");
-            }
-            success(sensors.stopSensor(args.options.sensor));
+            success(sensors.setOptions(args.options));
         } else {
             fail(-1, "Need to specify arguments");
         }

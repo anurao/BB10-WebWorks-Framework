@@ -22,13 +22,11 @@
 #include <sensor/libsensor.h>
 #include <map>
 #include <string>
+#include <utility>
 
 class Sensors;
 
 namespace webworks {
-
-typedef std::map<std::string, int> SensorTypeMap;
-typedef std::map<int, sensor_t*> ActiveSensorMap;
 
 struct SensorConfig {
     std::string sensor;
@@ -39,14 +37,18 @@ struct SensorConfig {
     bool reducedReporting;
 };
 
+typedef std::map<std::string, std::pair<int, SensorConfig> > SensorTypeMap;
+typedef std::map<int, sensor_t*> ActiveSensorMap;
+
 class SensorsNDK {
 public:
     explicit SensorsNDK(Sensors *parent = NULL);
     ~SensorsNDK();
     void StartEvents();
     void StopEvents();
-    void StartSensor(SensorConfig *sensor);
-    void StopSensor(std::string sensor);
+    void SetSensorOptions(const SensorConfig& config);
+    void StartSensor(const std::string& sensor);
+    void StopSensor(const std::string& sensor);
     static void* SensorThread(void *args);
 private:
     Sensors *m_pParent;

@@ -51,7 +51,7 @@ std::string Sensors::InvokeMethod(const std::string& command)
     std::string strCommand = command.substr(0, index);
     std::string arg = command.substr(index + 1, command.length());
 
-    if (strCommand == "startSensor") {
+    if (strCommand == "setOptions") {
         Json::Reader reader;
         Json::Value obj;
 
@@ -66,7 +66,10 @@ std::string Sensors::InvokeMethod(const std::string& command)
         sensorConfig.background = obj["background"].asBool();
         sensorConfig.queue = obj["queue"].asBool();
         sensorConfig.reducedReporting = obj["reducedReporting"].asBool();
-        m_pSensorsController->StartSensor(&sensorConfig);
+        m_pSensorsController->SetSensorOptions(sensorConfig);
+        return "";
+    } else if (strCommand == "startSensor") {
+        m_pSensorsController->StartSensor(arg);
         return "";
     } else if (strCommand == "stopSensor") {
         m_pSensorsController->StopSensor(arg);

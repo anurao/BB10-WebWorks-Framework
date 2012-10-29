@@ -36,14 +36,14 @@ describe("sensors index", function () {
     });
 
     describe("sensors", function () {
-        describe("startSensor", function () {
+        describe("setOptions", function () {
             it("can call success", function () {
                 var success = jasmine.createSpy(),
-                    options = { "sensor" : "compass", "delay" : 10000 },
+                    options = { "sensor" : "devicecompass", "delay" : 10000 },
                     args = { "options" : JSON.stringify(options) };
 
-                index.startSensor(success, null, args, null);
-                expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + JSON.stringify(options));
+                index.setOptions(success, null, args, null);
+                expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "setOptions " + JSON.stringify(options));
                 expect(success).toHaveBeenCalled();
             });
 
@@ -51,61 +51,8 @@ describe("sensors index", function () {
                 var fail = jasmine.createSpy(),
                     args = {};
                 
-                index.startSensor(null, fail, args, null);
+                index.setOptions(null, fail, args, null);
                 expect(fail).toHaveBeenCalledWith(-1, "Need to specify arguments");
-            });
-        });
-
-        describe("startSensor", function () {
-            it("can call success", function () {
-                var success = jasmine.createSpy(),
-                    options = { "sensor" : "compass" },
-                    args = { "options" : JSON.stringify(options) };
-
-                index.stopSensor(success, null, args, null);
-                expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + options.sensor);
-                expect(success).toHaveBeenCalled();
-            });
-
-            it("can call call with invalid parameters", function () {
-                var fail = jasmine.createSpy(),
-                    args = {};
-                
-                index.startSensor(null, fail, args, null);
-                expect(fail).toHaveBeenCalledWith(-1, "Need to specify arguments");
-            });
-        });
-
-
-        describe("onsensor", function () {
-            it("can register the 'onsensor' event", function () {
-                var eventName = "onsensor",
-                    args = {eventName : encodeURIComponent(eventName)},
-                    success = jasmine.createSpy(),
-                    utils = require(_libDir + "utils");
-
-                spyOn(utils, "loadExtensionModule").andCallFake(function () {
-                    return eventExt;
-                });
-
-                spyOn(events, "add");
-                index.registerEvents(success);
-                eventExt.add(null, null, args);
-                expect(success).toHaveBeenCalled();
-                expect(events.add).toHaveBeenCalled();
-                expect(events.add.mostRecentCall.args[0].event).toEqual(eventName);
-                expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
-            });
-
-            it("can un-register the 'onsensor' event", function () {
-                var eventName = "onsensor",
-                    args = {eventName : encodeURIComponent(eventName)};
-
-                spyOn(events, "remove");
-                eventExt.remove(null, null, args);
-                expect(events.remove).toHaveBeenCalled();
-                expect(events.remove.mostRecentCall.args[0].event).toEqual(eventName);
-                expect(events.remove.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
             });
         });
     });

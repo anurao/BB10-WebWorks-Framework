@@ -15,7 +15,7 @@
 */
 
 var sensors,
-    triggerCallback = null;
+    callbackMap = {};
 
 ///////////////////////////////////////////////////////////////////
 // JavaScript wrapper for JNEXT plugin for connection
@@ -24,33 +24,28 @@ var sensors,
 JNEXT.Sensors = function () {
     var self = this;
 
-    self.startEvents = function (trigger) {
-        triggerCallback = trigger;
-        JNEXT.invoke(self.m_id, "startEvents");
+    self.startSensor = function (sensor, callback) {
+        JNEXT.invoke(self.m_id, "startSensor " + sensor);
+        callbackMap[sensor] = callback;
     };
-
-    self.stopEvents = function () {
-        JNEXT.invoke(self.m_id, "stopEvents");
-        triggerCallback = null;
-    };
-
-    self.startSensor = function (config) {
-        JNEXT.invoke(self.m_id, "startSensor " + JSON.stringify(config));
-    };
-
+    
     self.stopSensor = function (sensor) {
         JNEXT.invoke(self.m_id, "stopSensor " + sensor);
+        delete callbackMap[sensor];
+    };
+
+    self.setOptions = function (options) {
+        JNEXT.invoke(self.m_id, "setOptions " + JSON.stringify(options));
+        delete callbackMap[options.sensor];
     };
 
     self.onEvent = function (strData) {
         var arData = strData.split(" "),
             strEventDesc = arData[0],
             jsonData;
-        
-        if (strEventDesc === "onsensor") {
-            jsonData = arData.slice(2, arData.length).join(" ");
-            triggerCallback(arData[1], JSON.parse(jsonData));
-        }
+
+        jsonData = arData.slice(1, arData.length).join(" ");
+        callbackMap[strEventDesc](JSON.parse(jsonData));
     };
 
     self.getId = function () {

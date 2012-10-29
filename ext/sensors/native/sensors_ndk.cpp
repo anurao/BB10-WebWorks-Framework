@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <string>
+
 #include "sensors_ndk.hpp"
 #include "sensors_js.hpp"
 
@@ -70,39 +71,52 @@ void SensorsNDK::StopEvents()
     }
 }
 
-void SensorsNDK::StartSensor(SensorConfig *config)
+void SensorsNDK::SetSensorOptions(const SensorConfig& config)
 {
     MUTEX_LOCK();
-    if (m_sensorsEnabled) {
-        const SensorTypeMap::iterator findSensor = _sensorTypeMap.find(config->sensor);
-        if (findSensor != _sensorTypeMap.end()) {
-            sensor_type_e sensorType = static_cast<sensor_type_e>(findSensor->second);
+    const SensorTypeMap::iterator findSensor = _sensorTypeMap.find(config.sensor);
+    if (findSensor != _sensorTypeMap.end()) {
+        findSensor->second.second = config;
+    }
+    MUTEX_UNLOCK();
+}
 
-            const ActiveSensorMap::iterator findActiveSensor = m_activeSensors.find(sensorType);
-            if (findActiveSensor == m_activeSensors.end()) {
-                sensor_t *sensor = NULL;
-                sensor = sensor_new(sensorType);
-                SIGEV_PULSE_INIT(&m_sigEvent, m_coid, SIGEV_PULSE_PRIO_INHERIT, SENSOR_BASE_PULSE + sensorType, sensor);
-                sensor_event_notify(sensor, &m_sigEvent);
-                sensor_set_delay(sensor, config->delay);
-                sensor_set_queue(sensor, config->queue);
-                sensor_set_batching(sensor, config->batching);
-                sensor_set_background(sensor, config->background);
-                sensor_set_reduced_reporting(sensor, config->reducedReporting);
-                m_activeSensors[sensorType] = sensor;
-            }
+void SensorsNDK::StartSensor(const std::string& sensorString)
+{
+    if (!m_sensorsEnabled) {
+        StartEvents();
+    }
+    MUTEX_LOCK();
+
+    const SensorTypeMap::iterator findSensor = _sensorTypeMap.find(sensorString);
+    if (findSensor != _sensorTypeMap.end()) {
+        sensor_type_e sensorType = static_cast<sensor_type_e>(findSensor->second.first);
+
+        const ActiveSensorMap::iterator findActiveSensor = m_activeSensors.find(sensorType);
+        if (findActiveSensor == m_activeSensors.end()) {
+            sensor_t *sensor = NULL;
+            SensorConfig *config = &findSensor->second.second;
+            sensor = sensor_new(sensorType);
+            SIGEV_PULSE_INIT(&m_sigEvent, m_coid, SIGEV_PULSE_PRIO_INHERIT, SENSOR_BASE_PULSE + sensorType, sensor);
+            sensor_event_notify(sensor, &m_sigEvent);
+            sensor_set_delay(sensor, config->delay);
+            sensor_set_queue(sensor, config->queue);
+            sensor_set_batching(sensor, config->batching);
+            sensor_set_background(sensor, config->background);
+            sensor_set_reduced_reporting(sensor, config->reducedReporting);
+            m_activeSensors[sensorType] = sensor;
         }
     }
     MUTEX_UNLOCK();
 }
 
-void SensorsNDK::StopSensor(std::string sensor)
+void SensorsNDK::StopSensor(const std::string& sensor)
 {
     MUTEX_LOCK();
     if (m_sensorsEnabled) {
         const SensorTypeMap::iterator findSensor = _sensorTypeMap.find(sensor);
         if (findSensor != _sensorTypeMap.end()) {
-            stopActiveSensor(static_cast<sensor_type_e>(findSensor->second));
+            stopActiveSensor(static_cast<sensor_type_e>(findSensor->second.first));
         }
     }
     MUTEX_UNLOCK();
@@ -111,9 +125,9 @@ void SensorsNDK::StopSensor(std::string sensor)
 void *SensorsNDK::SensorThread(void *args)
 {
     Sensors *parent = reinterpret_cast<Sensors *>(args);
-    fprintf(stderr, "event thread is running");
     struct _pulse pulse;
 
+    fprintf(stderr, "event thread is running\n");
     // create channel for events
     m_sensorChannel = ChannelCreate(0);
     m_coid = ConnectAttach(ND_LOCAL_NODE, 0, m_sensorChannel, _NTO_SIDE_CHANNEL, 0);
@@ -133,13 +147,15 @@ void *SensorsNDK::SensorThread(void *args)
             }
             Json::FastWriter writer;
             Json::Value root;
-            std::string sensorType;
+
             sensor_event_t event;
             fprintf(stderr, "pulse type: %d\n", pulse.type);
             sensor_t *sensor = static_cast<sensor_t *>(pulse.value.sival_ptr);
             sensor_get_event(sensor, &event);
 
             std::string accuracy;
+            std::string sensorEvent;
+
             switch (event.accuracy)
             {
                 case SENSOR_ACCURACY_UNRELIABLE:
@@ -158,77 +174,84 @@ void *SensorsNDK::SensorThread(void *args)
 
             root["accuracy"] = accuracy;
 
+            sensor_info_t sensorInfo;
+            sensor_get_info(sensor, &sensorInfo);
+
+            // useful sensor information
+            root["min"] = sensorInfo.range_min;
+            root["max"] = sensorInfo.range_max;
+
             switch (event.type)
             {
                 case SENSOR_TYPE_ACCELEROMETER:
-                    sensorType = "accelerometer";
+                    sensorEvent = "deviceaccelerometer";
                     root["x"] = event.motion.dsp.x;
                     root["y"] = event.motion.dsp.y;
                     root["z"] = event.motion.dsp.z;
                     break;
                 case SENSOR_TYPE_MAGNETOMETER:
-                    sensorType = "magnetometer";
+                    sensorEvent = "devicemagnetometer";
                     root["x"] = event.motion.dsp.x;
                     root["y"] = event.motion.dsp.y;
                     root["z"] = event.motion.dsp.z;
                     break;
                 case SENSOR_TYPE_GYROSCOPE:
-                    sensorType = "gyroscope";
+                    sensorEvent = "devicegyroscope";
                     root["x"] = event.motion.dsp.x;
                     root["y"] = event.motion.dsp.y;
                     root["z"] = event.motion.dsp.z;
                     root["temperature"] = event.motion.gyro.temperature;
                     break;
                 case SENSOR_TYPE_COMPASS:
-                    sensorType = "compass";
-                    root["azimuth"] = event.compass_s.azimuth;
+                    sensorEvent = "devicecompass";
+                    root["value"] = event.compass_s.azimuth;
                     root["isFaceDown"] = event.compass_s.is_face_down;
                     break;
                 case SENSOR_TYPE_PROXIMITY:
-                    sensorType = "proximity";
-                    root["distance"] = event.proximity_s.distance;
+                    sensorEvent = "deviceproximity";
+                    root["value"] = event.proximity_s.distance;
                     root["normalized"] = event.proximity_s.normalized;
                     break;
                 case SENSOR_TYPE_LIGHT:
-                    sensorType = "light";
-                    root["illuminance"] = event.light_s.illuminance;
+                    sensorEvent = "devicelight";
+                    root["value"] = event.light_s.illuminance;
                     break;
                 case SENSOR_TYPE_GRAVITY:
-                    sensorType = "gravity";
+                    sensorEvent = "devicegravity";
                     root["x"] = event.motion.dsp.x;
                     root["y"] = event.motion.dsp.y;
                     root["z"] = event.motion.dsp.z;
                     break;
                 case SENSOR_TYPE_LINEAR_ACCEL:
-                    sensorType = "linear_acceleration";
+                    sensorEvent = "devicelinearacceleration";
                     root["x"] = event.motion.dsp.x;
                     root["y"] = event.motion.dsp.y;
                     root["z"] = event.motion.dsp.z;
                     break;
                 case SENSOR_TYPE_ROTATION_VECTOR:
-                    sensorType = "rotation_vector";
+                    sensorEvent = "devicerotationvector";
                     root["x"] = event.motion.dsp.x;
                     root["y"] = event.motion.dsp.y;
                     root["z"] = event.motion.dsp.z;
                     break;
                 case SENSOR_TYPE_ORIENTATION:
-                    sensorType = "orientation";
+                    sensorEvent = "deviceorientation";
                     root["screen"] = event.orientation.screen;
                     root["face"] = event.orientation.face;
                     break;
                 case SENSOR_TYPE_AZIMUTH_PITCH_ROLL:
-                    sensorType = "azimuth_pitch_roll";
+                    sensorEvent = "deviceazimuthpitchroll";
                     root["azimuth"] = event.apr.azimuth;
                     root["pitch"] = event.apr.pitch;
                     root["roll"] = event.apr.roll;
                     break;
                 case SENSOR_TYPE_FACE_DETECT:
-                    sensorType = "face_detect";
-                    root["face_detect"] = event.face_detect_s.face_detect;
+                    sensorEvent = "devicefacedetect";
+                    root["value"] = event.face_detect_s.face_detect;
                     break;
                 case SENSOR_TYPE_HOLSTER:
-                    sensorType = "holster";
-                    root["holstered"] = event.holster_s.holstered;
+                    sensorEvent = "deviceholster";
+                    root["value"] = event.holster_s.holstered;
                     break;
                 case SENSOR_TYPE_ROTATION_MATRIX:
                 case SENSOR_TYPE_ALTIMETER:
@@ -239,11 +262,16 @@ void *SensorsNDK::SensorThread(void *args)
             }
 
             sensor_event_notify_rearm(sensor);
-            parent->NotifyEvent("onsensor " + sensorType + " " +  writer.write(root));
+            parent->NotifyEvent(sensorEvent + " " +  writer.write(root));
         }
     }
+    
+    //clean up channels
+    ConnectDetach(m_coid);
+    ChannelDestroy(m_sensorChannel);
     return NULL;
 }
+
 
 void SensorsNDK::stopActiveSensor(sensor_type_e sensorType)
 {
@@ -251,26 +279,27 @@ void SensorsNDK::stopActiveSensor(sensor_type_e sensorType)
     if (findActiveSensor != m_activeSensors.end()) {
         sensor_t *sensor = m_activeSensors[sensorType];
         sensor_delete(&sensor);
-        m_activeSensors.erase(sensorType);
+        m_activeSensors.erase(findActiveSensor);
     }
 }
 
 void SensorsNDK::createSensorMap()
 {
-    _sensorTypeMap["accelerometer"] = SENSOR_TYPE_ACCELEROMETER;
-    _sensorTypeMap["magnetometer"] = SENSOR_TYPE_MAGNETOMETER;
-    _sensorTypeMap["gyroscope"] = SENSOR_TYPE_GYROSCOPE;
-    _sensorTypeMap["compass"] = SENSOR_TYPE_COMPASS;
-    _sensorTypeMap["proximity"] = SENSOR_TYPE_PROXIMITY;
-    _sensorTypeMap["light"] = SENSOR_TYPE_LIGHT;
-    _sensorTypeMap["gravity"] = SENSOR_TYPE_GRAVITY;
-    _sensorTypeMap["linear_acceleration"] = SENSOR_TYPE_LINEAR_ACCEL;
-    _sensorTypeMap["rotation_vector"] = SENSOR_TYPE_ROTATION_VECTOR;
-    _sensorTypeMap["orientation"] = SENSOR_TYPE_ORIENTATION;
-    _sensorTypeMap["rotation_matrix"] = SENSOR_TYPE_ROTATION_MATRIX;
-    _sensorTypeMap["azimuth_pitch_roll"] = SENSOR_TYPE_AZIMUTH_PITCH_ROLL;
-    _sensorTypeMap["face_detect"] = SENSOR_TYPE_FACE_DETECT;
-    _sensorTypeMap["holster"] = SENSOR_TYPE_HOLSTER;
+    SensorConfig config;
+    _sensorTypeMap["deviceaccelerometer"] = std::make_pair(SENSOR_TYPE_ACCELEROMETER, config);
+    _sensorTypeMap["devicemagnetometer"] = std::make_pair(SENSOR_TYPE_MAGNETOMETER, config);
+    _sensorTypeMap["devicegyroscope"] = std::make_pair(SENSOR_TYPE_GYROSCOPE, config);
+    _sensorTypeMap["devicecompass"] = std::make_pair(SENSOR_TYPE_COMPASS, config);
+    _sensorTypeMap["deviceproximity"] = std::make_pair(SENSOR_TYPE_PROXIMITY, config);
+    _sensorTypeMap["devicelight"] = std::make_pair(SENSOR_TYPE_LIGHT, config);
+    _sensorTypeMap["devicegravity"] = std::make_pair(SENSOR_TYPE_GRAVITY, config);
+    _sensorTypeMap["devicelinearacceleration"] = std::make_pair(SENSOR_TYPE_LINEAR_ACCEL, config);
+    _sensorTypeMap["devicerotationvector"] = std::make_pair(SENSOR_TYPE_ROTATION_VECTOR, config);
+    _sensorTypeMap["deviceorientation"] = std::make_pair(SENSOR_TYPE_ORIENTATION, config);
+    _sensorTypeMap["devicerotationmatrix"] = std::make_pair(SENSOR_TYPE_ROTATION_MATRIX, config);
+    _sensorTypeMap["deviceazimuthpitchroll"] = std::make_pair(SENSOR_TYPE_AZIMUTH_PITCH_ROLL, config);
+    _sensorTypeMap["devicefacedetect"] = std::make_pair(SENSOR_TYPE_FACE_DETECT, config);
+    _sensorTypeMap["deviceholster"] = std::make_pair(SENSOR_TYPE_HOLSTER, config);
 }
 }
 

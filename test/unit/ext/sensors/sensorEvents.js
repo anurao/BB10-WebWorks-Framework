@@ -37,16 +37,138 @@ describe("sensor sensorEvents", function () {
     describe("addEventListener", function () {
         var trigger = function () {};
 
-        it("invokes JNEXT startEvents for 'onsensor' event", function () {
-            sensorsEvents.addEventListener("onsensor", trigger);
-            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startEvents");
+        it("invokes JNEXT startSensor for 'deviceaccelerometer' event", function () {
+            sensorsEvents.addEventListener("deviceaccelerometer", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "deviceaccelerometer");
         });
+
+        it("invokes JNEXT startSensor for 'devicemagnetometer' event", function () {
+            sensorsEvents.addEventListener("devicemagnetometer", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicemagnetometer");
+        });
+
+        it("invokes JNEXT startSensor for 'devicegyroscope' event", function () {
+            sensorsEvents.addEventListener("devicegyroscope", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicegyroscope");
+        });
+
+        it("invokes JNEXT startSensor for 'devicecompass' event", function () {
+            sensorsEvents.addEventListener("devicecompass", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicecompass");
+        });
+
+        it("invokes JNEXT startSensor for 'deviceproximity' event", function () {
+            sensorsEvents.addEventListener("deviceproximity", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "deviceproximity");
+        });
+
+        it("invokes JNEXT startSensor for 'devicelight' event", function () {
+            sensorsEvents.addEventListener("devicelight", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicelight");
+        });
+
+        it("invokes JNEXT startSensor for 'devicegravity' event", function () {
+            sensorsEvents.addEventListener("devicegravity", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicegravity");
+        });
+
+        it("invokes JNEXT startSensor for 'devicelinearacceleration' event", function () {
+            sensorsEvents.addEventListener("devicelinearacceleration", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicelinearacceleration");
+        });
+
+        it("invokes JNEXT startSensor for 'devicerotationvector' event", function () {
+            sensorsEvents.addEventListener("devicerotationvector", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicerotationvector");
+        });
+
+        it("invokes JNEXT startSensor for 'deviceorientation' event", function () {
+            sensorsEvents.addEventListener("deviceorientation", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "deviceorientation");
+        });
+
+        it("invokes JNEXT startSensor for 'deviceazimuthpitchroll' event", function () {
+            sensorsEvents.addEventListener("deviceazimuthpitchroll", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "deviceazimuthpitchroll");
+        });
+
+        it("invokes JNEXT startSensor for 'devicefacedetect' event", function () {
+            sensorsEvents.addEventListener("devicefacedetect", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "devicefacedetect");
+        });
+
+        it("invokes JNEXT startSensor for 'deviceholster' event", function () {
+            sensorsEvents.addEventListener("deviceholster", trigger);
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "startSensor " + "deviceholster");
+        });
+
     });
 
     describe("removeEventListener", function () {
-        it("invokes JNEXT stopEvents for 'onsensor' event", function () {
-            sensorsEvents.removeEventListener("onsensor");
-            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopEvents");
+        it("invokes JNEXT stopSensor for 'deviceaccelerometer' event", function () {
+            sensorsEvents.removeEventListener("deviceaccelerometer");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "deviceaccelerometer");
         });
+
+        it("invokes JNEXT stopSensor for 'devicemagnetometer' event", function () {
+            sensorsEvents.removeEventListener("devicemagnetometer");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicemagnetometer");
+        });
+
+        it("invokes JNEXT stopSensor for 'devicegyroscope' event", function () {
+            sensorsEvents.removeEventListener("devicegyroscope");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicegyroscope");
+        });
+
+        it("invokes JNEXT stopSensor for 'devicecompass' event", function () {
+            sensorsEvents.removeEventListener("devicecompass");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicecompass");
+        });
+
+        it("invokes JNEXT stopSensor for 'deviceproximity' event", function () {
+            sensorsEvents.removeEventListener("deviceproximity");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "deviceproximity");
+        });
+
+        it("invokes JNEXT stopSensor for 'devicelight' event", function () {
+            sensorsEvents.removeEventListener("devicelight");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicelight");
+        });
+
+        it("invokes JNEXT stopSensor for 'devicegravity' event", function () {
+            sensorsEvents.removeEventListener("devicegravity");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicegravity");
+        });
+
+        it("invokes JNEXT stopSensor for 'devicelinearacceleration' event", function () {
+            sensorsEvents.removeEventListener("devicelinearacceleration");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicelinearacceleration");
+        });
+        
+        it("invokes JNEXT stopSensor for 'devicerotationvector' event", function () {
+            sensorsEvents.removeEventListener("devicerotationvector");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicerotationvector");
+        });
+
+        it("invokes JNEXT stopSensor for 'deviceorientation' event", function () {
+            sensorsEvents.removeEventListener("deviceorientation");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "deviceorientation");
+        });
+
+        it("invokes JNEXT stopSensor for 'deviceazimuthpitchroll' event", function () {
+            sensorsEvents.removeEventListener("deviceazimuthpitchroll");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "deviceazimuthpitchroll");
+        });
+
+        it("invokes JNEXT stopSensor for 'devicefacedetect' event", function () {
+            sensorsEvents.removeEventListener("devicefacedetect");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "devicefacedetect");
+        });
+        
+        it("invokes JNEXT stopSensor for 'deviceholster' event", function () {
+            sensorsEvents.removeEventListener("deviceholster");
+            expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "stopSensor " + "deviceholster");
+        });        
     });
 });
+

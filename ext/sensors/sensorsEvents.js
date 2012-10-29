@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-var sensors = require("./sensorsJNEXT").sensors;
+var sensors = require("./sensorsJNEXT").sensors,
+    events = ["deviceaccelerometer", "devicemagnetometer", "devicegyroscope", "devicecompass", "deviceproximity", "devicelight", "devicegravity", "devicelinearacceleration",
+              "devicerotationvector", "deviceorientation", "deviceazimuthpitchroll", "devicefacedetect", "deviceholster"];
 
 module.exports = {
     addEventListener: function (event, trigger) {
-        if (event === "onsensor") {
-            sensors.startEvents(trigger);
-        }
-        else {
+        if (events.indexOf(event) !== -1) {
+            sensors.startSensor(event, trigger);
+        } else {
             console.log("Ignore registration for unknown event: " + event);
         }
     },
     removeEventListener: function (event) {
-        if (event === "onsensor") {
-            sensors.stopEvents();
-        }
-        else {
+        if (events.indexOf(event) !== -1) {
+            sensors.stopSensor(event);
+        } else {
             console.log("Ignore un-registration for unknown event: " + event);
         }
     }
 };
-
