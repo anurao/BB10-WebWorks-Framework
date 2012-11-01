@@ -25,7 +25,7 @@ var cal,
     Attendee,
     calEvent,
     originalEventId,
-    timeout = 15000;
+    timeout = 20000;
 
 // TODO test find by start/end date
 // TODO test find without filter
@@ -393,7 +393,6 @@ describe("blackberry.pim.calendar", function () {
         it('can call save to persist the event on the device', function () {
             var called = false,
                 successCb = jasmine.createSpy().andCallFake(function (created) {
-                    called = true;
                     expect(created).toBeDefined();
                     expect(typeof created.id).toBe("string");
                     expect(created.id).not.toBe("");
@@ -404,6 +403,7 @@ describe("blackberry.pim.calendar", function () {
                     expect(created.location).toBe("Location 1");
                     calEvent = created;
                     originalEventId = calEvent.id;
+                    called = true;
                 }),
                 errorCb = jasmine.createSpy();
 
@@ -423,7 +423,6 @@ describe("blackberry.pim.calendar", function () {
             var called = false;
 
             findByEventsByPrefix("wwt001", function (events) {
-                called = true;
                 expect(events.length).toBe(1);
 
                 if (events.length === 1) {
@@ -434,6 +433,8 @@ describe("blackberry.pim.calendar", function () {
                     expect(events[0].summary).toBe("WebWorksTest create event 1 (wwt001)");
                     expect(events[0].location).toBe("Location 1");
                 }
+
+                called = true;
             });
 
             waitsFor(function () {
@@ -450,9 +451,9 @@ describe("blackberry.pim.calendar", function () {
                 called = false,
                 evt,
                 successCb = jasmine.createSpy().andCallFake(function (saved) {
-                    called = true;
                     expect(saved).toBeDefined();
                     expect(saved.description).toEqual(description.replace(/\n/g, "\\n"));
+                    called = true;
                 }),
                 errorCb = jasmine.createSpy().andCallFake(function (error) {
                     called = true;
@@ -487,9 +488,9 @@ describe("blackberry.pim.calendar", function () {
                     called = true;
                 }),
                 errorCb = jasmine.createSpy().andCallFake(function (error) {
-                    called = true;
                     expect(error).toBeDefined();
                     expect(error.code).toEqual(CalendarError.INVALID_ARGUMENT_ERROR);
+                    called = true;
                 });
 
             evt = cal.createEvent({
@@ -521,9 +522,9 @@ describe("blackberry.pim.calendar", function () {
                     called = true;
                 }),
                 errorCb = jasmine.createSpy().andCallFake(function (error) {
-                    called = true;
                     expect(error).toBeDefined();
                     expect(error.code).toEqual(CalendarError.INVALID_ARGUMENT_ERROR);
+                    called = true;
                 });
 
             evt = cal.createEvent({
@@ -588,7 +589,6 @@ describe("blackberry.pim.calendar", function () {
             var called = false;
 
             findByEventsByPrefix("wwt003", function (events) {
-                called = true;
                 expect(events.length).toBe(1);
 
                 if (events.length === 1) {
@@ -599,6 +599,8 @@ describe("blackberry.pim.calendar", function () {
                     expect(events[0].summary).toBe("WebWorksTest create event 1 modified (wwt003)");
                     expect(events[0].location).toBe("Location 1 modified");
                 }
+
+                called = true;
             });
 
             waitsFor(function () {
@@ -672,8 +674,8 @@ describe("blackberry.pim.calendar", function () {
             var called = false;
 
             findByEventsByPrefix("wwt003", function (events) {
-                called = true;
                 expect(events.length).toBe(0);
+                called = true;
             });
 
             waitsFor(function () {
@@ -692,9 +694,9 @@ describe("blackberry.pim.calendar", function () {
                     called = true;
                 }),
                 errorCb = jasmine.createSpy().andCallFake(function (error) {
-                    called = true;
                     expect(error).toBeDefined();
                     expect(error.code).toEqual(CalendarError.INVALID_ARGUMENT_ERROR);
+                    called = true;
                 });
 
             evt = cal.createEvent({
@@ -1287,7 +1289,6 @@ describe("blackberry.pim.calendar", function () {
                 }),
                 called = false,
                 successCb = jasmine.createSpy().andCallFake(function (created) {
-                    called = true;
                     expect(created.summary).toBe(summary);
                     expect(created.location).toBe(venue);
                     expect(created.recurrence).toBeDefined();
@@ -1296,6 +1297,7 @@ describe("blackberry.pim.calendar", function () {
                     expect(created.recurrence.weekInMonth).toBe(1);
                     expect(created.recurrence.monthInYear).toBe(7);
                     recEvent = created;
+                    called = true;
                 }),
                 errorCb = jasmine.createSpy().andCallFake(function (error) {
                     called = true;
@@ -1356,13 +1358,13 @@ describe("blackberry.pim.calendar", function () {
                 }),
                 called = false,
                 successCb = jasmine.createSpy().andCallFake(function (created) {
-                    called = true;
                     expect(created.summary).toBe(summary);
                     expect(created.location).toBe(venue);
                     expect(created.recurrence).toBeDefined();
                     expect(created.recurrence.frequency).toBe(CalendarRepeatRule.FREQUENCY_MONTHLY);
                     expect(created.recurrence.dayInMonth).toBe(CalendarRepeatRule.LAST_DAY_IN_MONTH);
                     recEvent = created;
+                    called = true;
                 }),
                 errorCb = jasmine.createSpy().andCallFake(function (error) {
                     called = true;
@@ -1427,9 +1429,9 @@ describe("blackberry.pim.calendar", function () {
                 called = false,
                 exceptionEvtSavedCalled = false,
                 exceptionSavedCb = jasmine.createSpy().andCallFake(function (exc) {
-                    exceptionEvtSavedCalled = true;
                     expect(exc.id).not.toBe(recEvent.id);
                     expect(exc.parentId).toBe(recEvent.id);
+                    exceptionEvtSavedCalled = true;
                 }),
                 exceptionErrorCb = jasmine.createSpy().andCallFake(function (error) {
                     exceptionEvtSavedCalled = true;
@@ -1553,7 +1555,7 @@ describe("blackberry.pim.calendar", function () {
             expect(successCb).not.toHaveBeenCalled();
         });
 
-        it('can still find events even if find options is null', function () {
+        xit('can still find events even if find options is null', function () {
             var called = false,
                 successCb = jasmine.createSpy().andCallFake(function (events) {
                     expect(events.length).toBeGreaterThan(0);
@@ -1610,6 +1612,15 @@ describe("blackberry.pim.calendar", function () {
             });
 
             created.save(function () {
+                called = true;
+            });
+
+            waitsFor(function () {
+                return called;
+            }, "Event not saved", timeout);
+
+            runs(function () {
+                called = false;
                 cal.findEvents(findOptions, successCb, errorCb);
             });
 

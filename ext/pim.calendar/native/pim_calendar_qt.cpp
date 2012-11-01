@@ -48,10 +48,14 @@
 #include "pim_calendar_qt.hpp"
 #include "timezone_utils.hpp"
 
+#define MUTEX_LOCK() pthread_mutex_lock(&_lock)
+#define MUTEX_UNLOCK() pthread_mutex_unlock(&_lock)
+
 namespace webworks {
 
 
 ServiceProvider PimCalendarQt::_provider = ServiceProvider();
+pthread_mutex_t PimCalendarQt::_lock = PTHREAD_MUTEX_INITIALIZER;
 
 PimCalendarQt::PimCalendarQt()
 {
@@ -76,8 +80,11 @@ Json::Value PimCalendarQt::Find(const Json::Value& args)
         _allFoldersMap.clear();
         _foldersMap.clear();
 
+        MUTEX_LOCK();
         bbpim::CalendarService* service = getCalendarService();
         QList<bbpim::CalendarEvent> events = service->events(searchParams, &result);
+        MUTEX_UNLOCK();
+
         if (result == bbpim::Result::BackEndError) {
             returnObj["_success"] = false;
             returnObj["code"] = UNKNOWN_ERROR;
@@ -112,6 +119,7 @@ Json::Value PimCalendarQt::Find(const Json::Value& args)
 
 Json::Value PimCalendarQt::Save(const Json::Value& attributeObj)
 {
+    MUTEX_LOCK();
     bbpim::CalendarService* service = getCalendarService();
     bbpim::Result::Type result;
     Json::Value returnObj;
@@ -132,7 +140,7 @@ Json::Value PimCalendarQt::Save(const Json::Value& attributeObj)
             return EditCalendarEvent(event, attributeObj);
         }
     }
-
+    MUTEX_UNLOCK();
     returnObj["_success"] = false;
     returnObj["code"] = INVALID_ARGUMENT_ERROR;
     return returnObj;
@@ -345,7 +353,7 @@ Json::Value PimCalendarQt::DeleteCalendarEvent(const Json::Value& calEventObj)
     if (calEventObj.isMember("calEventId") && calEventObj["calEventId"].isInt() && calEventObj.isMember("accountId") && calEventObj["accountId"].isInt()) {
         int accountId = calEventObj["accountId"].asInt();
         int eventId = calEventObj["calEventId"].asInt();
-
+        MUTEX_LOCK();
         bbpim::CalendarService* service = getCalendarService();
         bbpim::CalendarEvent event = service->event(accountId, eventId);
 
@@ -368,6 +376,7 @@ Json::Value PimCalendarQt::DeleteCalendarEvent(const Json::Value& calEventObj)
             returnObj["code"] = UNKNOWN_ERROR;
             return returnObj;
         }
+        MUTEX_UNLOCK();
     } else {
         returnObj["_success"] = false;
         returnObj["code"] = INVALID_ARGUMENT_ERROR;
@@ -440,7 +449,8 @@ Json::Value PimCalendarQt::accountToJson(const bbpimAccount::Account account)
     accountJson["enterprise"] = Json::Value(account.isEnterprise());
 
     Json::Value accountFoldersArray;
-    const QList<bbpim::CalendarFolder> folders = bbpim::CalendarService().folders();
+    bbpim::CalendarService* service = getCalendarService();
+    const QList<bbpim::CalendarFolder> folders = service->folders();
     for (int i = 0; i < folders.size(); i++)
     {
         if ( folders[i].accountId() == account.id() ) {
@@ -509,8 +519,10 @@ void PimCalendarQt::lookupCalendarFolderByFolderKey(bbpim::AccountId accountId, 
     std::string key = getFolderKeyStr(accountId, folderId);
 
     if (_allFoldersMap.empty()) {
+        MUTEX_LOCK();
         bbpim::CalendarService* service = getCalendarService();
         QList<bbpim::CalendarFolder> folders = service->folders();
+        MUTEX_UNLOCK();
 
         // populate map that contains all calendar folders
         for (QList<bbpim::CalendarFolder>::const_iterator i = folders.constBegin(); i != folders.constEnd(); i++) {
@@ -534,7 +546,7 @@ bool PimCalendarQt::isDefaultCalendarFolder(const bbpim::CalendarFolder& folder)
 
 Json::Value PimCalendarQt::getCalendarFolderJson(const bbpim::CalendarFolder& folder, bool skipDefaultCheck) {
     Json::Value f;
-
+/*
     bb::pim::account::AccountService* accountService = getAccountService();
     bb::pim::account::Account account = accountService->account(folder.accountId());
     QVariantMap variantMap = account.rawData();
@@ -581,7 +593,7 @@ Json::Value PimCalendarQt::getCalendarFolderJson(const bbpim::CalendarFolder& fo
     } else {
         f["enterprise"] = false; // assume false if not defined
     }
-
+*/
     f["id"] = intToStr(folder.id());
     f["accountId"] = intToStr(folder.accountId());
     f["name"] = folder.name().toStdString();
@@ -703,6 +715,8 @@ QList<QDateTime> PimCalendarQt::setEventFields(bbpim::CalendarEvent& ev, const J
 
     if (args.isMember("allDay") && args["allDay"].isBool()) {
         ev.setAllDay(args["allDay"].asBool());
+    } else {
+        ev.setAllDay(false); // default to false if not specified
     }
 
     if (args.isMember("summary") && args["summary"].isString()) {

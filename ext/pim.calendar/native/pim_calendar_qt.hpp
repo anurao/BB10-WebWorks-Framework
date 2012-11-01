@@ -18,6 +18,7 @@
 #define PIM_CALENDAR_QT_HPP_
 
 #include <json/value.h>
+#include <pthread.h>
 #include <bb/pim/account/Account>
 #include <bb/pim/account/AccountService>
 #include <bb/pim/calendar/DataTypes>
@@ -98,6 +99,7 @@ private:
     std::map<std::string, bbpim::CalendarFolder> _foldersMap;
 
     static ServiceProvider _provider;
+    static pthread_mutex_t _lock;
 };
 
 } // namespace webworks
