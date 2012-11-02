@@ -19,6 +19,9 @@ var _apiDir = __dirname + "./../../../../ext/app/",
     eventExt = require(__dirname + "./../../../../ext/event/index"),
     index,
     mockedExit,
+    mockedRotate,
+    mockedLockRotation,
+    mockedUnlockRotation,
     config;
 
 function getWebPlatformEventName(e) {
@@ -27,6 +30,8 @@ function getWebPlatformEventName(e) {
         return "inactive";
     case "resume":
         return "active";
+    case "orientationchange":
+        return "rotateDone";
     default:
         return e;
     }
@@ -64,12 +69,18 @@ describe("app index", function () {
         config = require(_libDir + "config");
         index = require(_apiDir + "index");
         mockedExit = jasmine.createSpy("exit");
+        mockedRotate = jasmine.createSpy();
+        mockedLockRotation = jasmine.createSpy();
+        mockedUnlockRotation = jasmine.createSpy();
         GLOBAL.window = GLOBAL;
         GLOBAL.window.qnx = {
             webplatform: {
                 getApplication: function () {
                     return {
-                        exit: mockedExit
+                        exit: mockedExit,
+                        rotate: mockedRotate,
+                        lockRotation: mockedLockRotation,
+                        unlockRotation: mockedUnlockRotation
                     };
                 }
             }
@@ -80,6 +91,9 @@ describe("app index", function () {
         config = null;
         index = null;
         mockedExit = null;
+        mockedRotate = null;
+        mockedLockRotation = null;
+        mockedUnlockRotation = null;
     });
 
     describe("getReadOnlyFields", function () {
@@ -102,6 +116,78 @@ describe("app index", function () {
         });
     });
 
+    describe("lockOrientation", function () {
+        it("calls webplatform rotate and lock methods", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy(),
+                mockArgs = {orientation : encodeURIComponent("\"landscape-primary\""), receiveRotateEvents: encodeURIComponent(false)};
+
+            index.lockOrientation(success, fail, mockArgs, null);
+            expect(fail).not.toHaveBeenCalled();
+            expect(success).toHaveBeenCalledWith(true);
+            expect(mockedRotate).toHaveBeenCalledWith("landscape");
+            expect(mockedLockRotation).toHaveBeenCalledWith(false);
+        });
+    });
+
+    describe("unlockOrientation", function () {
+        it("calls webplatform unlockRotation method", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+
+            index.unlockOrientation(success, fail, null, null);
+            expect(success).toHaveBeenCalled();
+            expect(fail).not.toHaveBeenCalled();
+            expect(mockedUnlockRotation).toHaveBeenCalled();
+        });
+    });
+
+    describe("currentOrientation", function () {
+        it("converts 0 degrees from window.orientation to portrait-primary", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+            GLOBAL.window.orientation = 0;
+
+            index.currentOrientation(success, fail, null, null);
+            expect(success).toHaveBeenCalledWith("portrait-primary");
+        });
+
+        it("converts 90 degrees from window.orientation to portrait-primary", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+            GLOBAL.window.orientation = 90;
+
+            index.currentOrientation(success, fail, null, null);
+            expect(success).toHaveBeenCalledWith("landscape-primary");
+        });
+
+        it("converts 180 degrees from window.orientation to portrait-primary", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+            GLOBAL.window.orientation = 180;
+
+            index.currentOrientation(success, fail, null, null);
+            expect(success).toHaveBeenCalledWith("portrait-secondary");
+        });
+
+        it("converts -90 degrees from window.orientation to portrait-primary", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+            GLOBAL.window.orientation = -90;
+
+            index.currentOrientation(success, fail, null, null);
+            expect(success).toHaveBeenCalledWith("landscape-secondary");
+        });
+
+        it("converts 270 degrees from window.orientation to portrait-primary", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+            GLOBAL.window.orientation = 270;
+            index.currentOrientation(success, fail, null, null);
+            expect(success).toHaveBeenCalledWith("landscape-secondary");
+        });
+    });
+
     describe("exit", function () {
         it("can call exit on the qnx.weblplatform Application", function () {
             var success = jasmine.createSpy();
@@ -114,6 +200,10 @@ describe("app index", function () {
         beforeEach(function () {
             spyOn(events, "add");
             spyOn(events, "remove");
+        });
+
+        it("can register 'orientationchange' event", function () {
+            testRegisterEvent("orientationchange");
         });
 
         it("can register 'pause' event", function () {
@@ -146,6 +236,10 @@ describe("app index", function () {
 
         it("can register 'keyboardPosition' event", function () {
             testRegisterEvent("keyboardPosition");
+        });
+
+        it("can un-register 'orientationchange' event", function () {
+            testUnRegisterEvent("orientationchange");
         });
 
         it("can un-register 'pause' event", function () {

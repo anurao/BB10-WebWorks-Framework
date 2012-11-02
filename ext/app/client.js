@@ -50,6 +50,23 @@ defineReadOnlyField("name");
 
 defineReadOnlyField("version");
 
+function lockOrientation(orientation, receiveRotateEvents) {
+    if (typeof receiveRotateEvents === "boolean") {
+        return window.webworks.execSync(ID, "lockOrientation", {orientation: orientation, receiveRotateEvents: receiveRotateEvents});
+    } else {
+        return window.webworks.execSync(ID, "lockOrientation", {orientation: orientation, receiveRotateEvents: false});
+    }
+}
+
+function unlockOrientation() {
+    window.webworks.execSync(ID, "unlockOrientation");
+}
+
+// Orientation Properties
+Object.defineProperty(_self, "orientation", {"value": window.webworks.execSync(ID, "currentOrientation"), "writable": false});
+Object.defineProperty(_self, "lockOrientation", {"value": lockOrientation, "writable": false});
+Object.defineProperty(_self, "unlockOrientation", {"value": unlockOrientation, "writable": false});
+
 window.webworks.execSync(ID, "registerEvents", null);
 
 module.exports = _self;

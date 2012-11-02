@@ -17,7 +17,38 @@ var _config = require("./../../lib/config"),
     _event = require("./../../lib/event"),
     _utils = require("./../../lib/utils"),
     _appEvents = require("./../../lib/events/applicationEvents"),
+    angleToEdge = function (angle) {
+        var orientation;
+
+        switch (angle) {
+        case 0:
+            orientation = 'portrait-primary';
+            break;
+        case 90:
+            orientation = 'landscape-primary';
+            break;
+        case 180:
+            orientation = 'portrait-secondary';
+            break;
+        case -90:
+        case 270:
+            orientation = 'landscape-secondary';
+            break;
+        default:
+            orientation = 'portrait-primary';
+            break;
+        }
+
+        return orientation;
+    },
     _actionMap = {
+        orientationchange: {
+            context: _appEvents,
+            event: "rotateDone",
+            trigger: function (angle) {
+                _event.trigger("orientationchange", angleToEdge(angle));
+            }
+        },
         swipedown: {
             context: _appEvents,
             event: "swipedown",
@@ -102,6 +133,53 @@ module.exports = {
             version: _config.version
         };
         success(ro);
+    },
+
+    lockOrientation : function (success, fail, args, env) {
+        var orientation = JSON.parse(decodeURIComponent(args.orientation)),
+            receiveRotateEvents = JSON.parse(decodeURIComponent(args.receiveRotateEvents)),
+            rotateTo;
+
+        // Convert HTML5 orientation syntax into device syntax
+        switch (orientation) {
+        case 'portrait':
+        case 'portrait-primary':
+            rotateTo = 'portrait';
+            break;
+
+        case 'landscape':
+        case 'landscape-primary':
+            rotateTo = 'landscape';
+            break;
+
+        case 'portrait-secondary':
+            rotateTo = 'bottom_up';
+            break;
+
+        case 'landscape-secondary':
+            rotateTo = 'left_up';
+            break;
+
+        default:
+            // Invalid orientation type
+            fail(-1, "invalid orientation type");
+            return;
+        }
+
+        // Force rotate to the given orientation then lock it
+        qnx.webplatform.getApplication().rotate(rotateTo);
+        qnx.webplatform.getApplication().lockRotation(receiveRotateEvents);
+        success(true);
+    },
+
+    unlockOrientation : function (success, fail, args, env) {
+        qnx.webplatform.getApplication().unlockRotation();
+        success();
+    },
+
+    currentOrientation : function (success, fail, args, env) {
+        var angle = window.orientation;
+        success(angleToEdge(angle));
     },
 
     exit: function () {

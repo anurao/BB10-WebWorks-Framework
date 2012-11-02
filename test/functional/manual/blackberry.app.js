@@ -27,6 +27,56 @@ function testAppReadOnly(field) {
 describe("blackberry.app", function () {
     var waitForTimeout = 15000;
 
+    describe("orientationchange", function () {
+        var onOrientationChange;
+
+        beforeEach(function () {
+            onOrientationChange = jasmine.createSpy();
+            blackberry.event.addEventListener("orientationchange", onOrientationChange);
+        });
+
+        afterEach(function () {
+            blackberry.event.removeEventListener("orientationchange", onOrientationChange);
+            onOrientationChange = null;
+        });
+
+        it("should invoke callback with landscape-primary when user rotates the phone counter-clockwise from within application", function () {
+            window.confirm("Rotate the device counter-clockwise to be in landscape mode");
+
+            waitsFor(function () {
+                return onOrientationChange.callCount;
+            }, "event never fired", waitForTimeout);
+
+            runs(function () {
+                expect(onOrientationChange).toHaveBeenCalledWith("landscape-primary");
+            });
+        });
+
+        it("should invoke callback with portrait-primary when user rotates the phone back to normal position from within application", function () {
+            window.confirm("Rotate the device clockwise to return it to the original portrait position");
+
+            waitsFor(function () {
+                return onOrientationChange.callCount;
+            }, "event never fired", waitForTimeout);
+
+            runs(function () {
+                expect(onOrientationChange).toHaveBeenCalledWith("portrait-primary");
+            });
+        });
+
+        it("should invoke callback with landscape-secondary when user rotates the phone clockwise from within application", function () {
+            window.confirm("Rotate the device clockwise to be in landscape mode");
+
+            waitsFor(function () {
+                return onOrientationChange.callCount;
+            }, "event never fired", waitForTimeout);
+
+            runs(function () {
+                expect(onOrientationChange).toHaveBeenCalledWith("landscape-secondary");
+            });
+        });
+    });
+
     describe("pause", function () {
         var onPause;
 
