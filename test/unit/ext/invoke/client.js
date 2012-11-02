@@ -23,7 +23,9 @@ var _extDir = __dirname + "./../../../../ext",
         execAsync: jasmine.createSpy("webworks.execAsync"),
         defineReadOnlyField: jasmine.createSpy(),
         event: {
-            isOn: jasmine.createSpy("webworks.event.isOn")
+            isOn: jasmine.createSpy("webworks.event.isOn"),
+            add : jasmine.createSpy("webworks.event.add"),
+            remove : jasmine.createSpy("webworks.event.remove")
         }
     };
 
@@ -198,6 +200,41 @@ describe("invoke client", function () {
             client.query(request, onSuccess, onError);
             expect(onSuccess).not.toHaveBeenCalled();
             expect(onError).toHaveBeenCalledWith(jasmine.any(String));
+        });
+
+
+    });
+
+    describe("invoke interruption", function () {
+        it("registerInterrupter is defined", function () {
+            expect(client.registerInterrupter).toBeDefined();
+        });
+
+        it("clearInterrupter is defined", function () {
+            expect(client.clearInterrupter).toBeDefined();
+        });
+
+        it("can successfully register as an interrupter", function () {
+            var handler = function () {};
+            client.registerInterrupter(handler);
+            expect(mockedWebworks.event.add).toHaveBeenCalledWith(_ID, 'invocation.interrupted', jasmine.any(Function));
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, 'registerInterrupter', {handler : handler});
+        });
+
+        it("can successfully register as an interrupter", function () {
+            client.clearInterrupter();
+            expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, 'clearInterrupter');
+        });
+
+        it("can successfully register an interrupter multiple times and only the last one is registered", function () {
+            var handler = function () {};
+            client.registerInterrupter(handler);
+            expect(mockedWebworks.event.add).toHaveBeenCalledWith(_ID, 'invocation.interrupted', jasmine.any(Function));
+
+            window.webworks.event.isOn = jasmine.createSpy().andReturn(true);
+            client.registerInterrupter(handler);
+            expect(mockedWebworks.event.remove).toHaveBeenCalledWith(_ID, 'invocation.interrupted', jasmine.any(Function));
+            expect(mockedWebworks.event.add).toHaveBeenCalledWith(_ID, 'invocation.interrupted', jasmine.any(Function));
         });
     });
 
