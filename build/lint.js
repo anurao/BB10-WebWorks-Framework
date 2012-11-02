@@ -19,7 +19,7 @@ var utils = require('./build/utils'),
     _c = require('./build/conf'),
     preprocess = require('./build/preprocess'),
     jWorkflow = require("jWorkflow"),
-    fs = require('fs');
+    fs = require('fs')hi;
 
 function copyFile(src, dst) {
     var fileBuffer = fs.readFileSync(src);
