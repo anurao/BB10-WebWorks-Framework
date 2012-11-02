@@ -12,7 +12,8 @@ include ../../../../meta.mk
 SRCS+=pim_calendar_qt.cpp \
       pim_calendar_js.cpp \
       timezone_utils.cpp \
-      service_provider.cpp
+      service_provider.cpp \
+      account_folder_mgr.cpp
 
 ifeq ($(UNITTEST),yes)
 NAME=test

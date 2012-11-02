@@ -32,6 +32,7 @@
 #include <limits>
 
 #include "service_provider.hpp"
+#include "account_folder_mgr.hpp"
 
 class PimCalendar;
 
@@ -98,6 +99,7 @@ private:
     std::map<std::string, bbpim::CalendarFolder> _allFoldersMap;
     std::map<std::string, bbpim::CalendarFolder> _foldersMap;
 
+    static AccountFolderManager _mgr;
     static ServiceProvider _provider;
     static pthread_mutex_t _lock;
 };

@@ -63,13 +63,19 @@ function deleteEventWithMatchingPrefix(prefix) {
     var numEventsRemoved = 0,
         numEventsFound = 0,
         successCb = function () {
+            console.log("removed!");
+            console.log(numEventsRemoved);
             numEventsRemoved++;
-        };
+        };/*
+        errorCb = function (error) {
+            console.log("Not removed! error=" + error.code);
+        };*/
 
     findByEventsByPrefix(prefix, function (events) {
             numEventsFound = events.length;
             events.forEach(function (e, index) {
-                e.remove(successCb);
+                console.log("in for each function");
+                e.remove(successCb/*, errorCb*/);
                 waitsFor(function () {
                     return numEventsRemoved === index + 1;
                 }, "Event not removed", timeout);
@@ -83,6 +89,7 @@ function deleteEventWithMatchingPrefix(prefix) {
     runs(function () {
         expect(numEventsRemoved).toBe(numEventsFound);
     });
+
 }
 
 beforeEach(function () {
@@ -1664,7 +1671,8 @@ describe("blackberry.pim.calendar", function () {
                 "summary": summary,
                 "location": location,
                 "start": start,
-                "end": end
+                "end": end,
+                "allDay": false
             });
 
             created.save(function () {
@@ -1937,7 +1945,7 @@ describe("blackberry.pim.calendar", function () {
             });
         });
 
-        xit("Signal the end of all find tests", function () {
+        it("Signal the end of all find tests", function () {
             doneTestingFind = true;
         });
     });
