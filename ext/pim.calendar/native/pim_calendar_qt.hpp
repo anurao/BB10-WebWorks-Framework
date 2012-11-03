@@ -96,6 +96,9 @@ private:
     Json::Value getCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId);
     static Json::Value accountToJson(const bbpimAccount::Account account);
 
+    static int MUTEX_LOCK();
+    static int MUTEX_UNLOCK();
+
     std::map<std::string, bbpim::CalendarFolder> _allFoldersMap;
     std::map<std::string, bbpim::CalendarFolder> _foldersMap;
 

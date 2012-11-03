@@ -32,6 +32,7 @@
 #include <bb/pim/account/Service>
 
 #include <stdio.h>
+#include <time.h>
 #include <QVariantMap>
 #include <QVariant>
 #include <QStringList>
@@ -48,9 +49,6 @@
 #include "pim_calendar_qt.hpp"
 #include "timezone_utils.hpp"
 
-#define MUTEX_LOCK() pthread_mutex_lock(&_lock)
-#define MUTEX_UNLOCK() pthread_mutex_unlock(&_lock)
-
 namespace webworks {
 
 
@@ -66,6 +64,20 @@ PimCalendarQt::~PimCalendarQt()
 {
 }
 
+int PimCalendarQt::MUTEX_LOCK()
+{
+    //struct timespec abs_time;
+    //clock_gettime(CLOCK_REALTIME , &abs_time);
+    //abs_time.tv_sec += 5;
+    //return pthread_mutex_timedlock (&_lock, &abs_time);
+    return pthread_mutex_trylock(&_lock);
+}
+
+int PimCalendarQt::MUTEX_UNLOCK()
+{
+    return pthread_mutex_unlock(&_lock);
+}
+
 /****************************************************************
  * Public Functions
  ****************************************************************/
@@ -76,17 +88,20 @@ Json::Value PimCalendarQt::Find(const Json::Value& args)
     bbpim::EventSearchParameters searchParams;
     bool isParamsValid = getSearchParams(searchParams, args);
     bbpim::Result::Type result;
+    int rc = 0;
 
     if (isParamsValid) {
         //_allFoldersMap.clear();
         //_foldersMap.clear();
+        QList<bbpim::CalendarEvent> events;
 
-        MUTEX_LOCK();
-        bbpim::CalendarService* service = getCalendarService();
-        QList<bbpim::CalendarEvent> events = service->events(searchParams, &result);
-        MUTEX_UNLOCK();
+        if ((rc = MUTEX_LOCK()) == 0) {
+            bbpim::CalendarService* service = getCalendarService();
+            events = service->events(searchParams, &result);
+            MUTEX_UNLOCK();
+        }
 
-        if (result == bbpim::Result::BackEndError) {
+        if (rc != 0 || result == bbpim::Result::BackEndError) {
             returnObj["_success"] = false;
             returnObj["code"] = UNKNOWN_ERROR;
             return returnObj;
@@ -131,30 +146,32 @@ Json::Value PimCalendarQt::Find(const Json::Value& args)
 
 Json::Value PimCalendarQt::Save(const Json::Value& attributeObj)
 {
-    MUTEX_LOCK();
-    bbpim::CalendarService* service = getCalendarService();
-    bbpim::Result::Type result;
     Json::Value returnObj;
-    fprintf(stderr, "#### PimCalendarQt::Save: Starting");
-    if (!attributeObj.isMember("id") || attributeObj["id"].isNull() || !attributeObj["id"].isInt()) {
-        return CreateCalendarEvent(attributeObj);
-    } else {
-        int eventId = attributeObj["id"].asInt();
-        int accountId = attributeObj["accountId"].asInt();
-        bbpim::CalendarEvent event = service->event(accountId, eventId, &result);
-        if (result == bbpim::Result::BackEndError) {
-            returnObj["_success"] = false;
-            returnObj["code"] = UNKNOWN_ERROR;
-            return returnObj;
-        }
 
-        if (event.isValid()) {
-            return EditCalendarEvent(event, attributeObj);
+    if (MUTEX_LOCK() == 0) {
+        bbpim::CalendarService* service = getCalendarService();
+        bbpim::Result::Type result;
+
+        fprintf(stderr, "#### PimCalendarQt::Save: Starting");
+        if (!attributeObj.isMember("id") || attributeObj["id"].isNull() || !attributeObj["id"].isInt()) {
+            returnObj = CreateCalendarEvent(attributeObj);
+        } else {
+            int eventId = attributeObj["id"].asInt();
+            int accountId = attributeObj["accountId"].asInt();
+            bbpim::CalendarEvent event = service->event(accountId, eventId, &result);
+
+            if (result == bbpim::Result::Success && event.isValid()) {
+                returnObj = EditCalendarEvent(event, attributeObj);
+            }
         }
+        MUTEX_UNLOCK();
     }
-    MUTEX_UNLOCK();
-    returnObj["_success"] = false;
-    returnObj["code"] = INVALID_ARGUMENT_ERROR;
+
+    if (returnObj.empty()) {
+        returnObj["_success"] = false;
+        returnObj["code"] = UNKNOWN_ERROR; //INVALID_ARGUMENT_ERROR;
+    }
+
     return returnObj;
 }
 
@@ -173,38 +190,35 @@ Json::Value PimCalendarQt::GetCalendarFolders()
 
 Json::Value PimCalendarQt::GetDefaultCalendarFolder()
 {
-    bb::pim::account::AccountService* accountService = getAccountService();
-    bb::pim::account::Account defaultCalAccnt = accountService->defaultAccount(bb::pim::account::Service::Calendars);
-    bbpim::AccountId accountId = defaultCalAccnt.id();
-    bbpim::FolderId folderId = intToFolderId(accountService->getDefault(bb::pim::account::Service::Calendars));
+    if (MUTEX_LOCK() == 0) {
+        bb::pim::account::AccountService* accountService = getAccountService();
+        bb::pim::account::Account defaultCalAccnt = accountService->defaultAccount(bb::pim::account::Service::Calendars);
+        bbpim::AccountId accountId = defaultCalAccnt.id();
+        bbpim::FolderId folderId = intToFolderId(accountService->getDefault(bb::pim::account::Service::Calendars));
 
-    bbpim::CalendarService* service = getCalendarService();
-    bbpim::Result::Type result;
-    bbpim::CalendarFolder defaultFolder;
-    QList<bbpim::CalendarFolder> folders = service->folders(&result);
-    Json::Value returnObj;
+        bbpim::CalendarService* service = getCalendarService();
+        bbpim::Result::Type result;
+        QList<bbpim::CalendarFolder> folders = service->folders(&result);
+        MUTEX_UNLOCK();
 
-    if (result == bbpim::Result::BackEndError) {
-        returnObj["_success"] = false;
-        returnObj["code"] = UNKNOWN_ERROR;
-        return returnObj;
-    }
+        if (result == bbpim::Result::Success) {
+            for (QList<bbpim::CalendarFolder>::const_iterator i = folders.constBegin(); i != folders.constEnd(); i++) {
+                if (i->id() == folderId && i->accountId() == accountId) {
+                    return getCalendarFolderJson(*i, true);
+                }
+            }
 
-    for (QList<bbpim::CalendarFolder>::const_iterator i = folders.constBegin(); i != folders.constEnd(); i++) {
-        if (i->id() == folderId && i->accountId() == accountId) {
-            return getCalendarFolderJson(*i, true);
+            // if it reaches here, it means the app does not have permission to get the REAL default folder,
+            // which is possible if the app is in work perimeter
+            if (folders.constBegin() != folders.constEnd()) {
+                return getCalendarFolderJson(*(folders.constBegin()), true);
+            }
         }
     }
 
-    // if it reaches here, it means the app does not have permission to get the REAL default folder,
-    // which is possible if the app is in work perimeter
-    if (folders.constBegin() != folders.constEnd()) {
-        return getCalendarFolderJson(*(folders.constBegin()), true);
-    }
-
+    Json::Value returnObj;
     returnObj["_success"] = false;
     returnObj["code"] = UNKNOWN_ERROR;
-
     return returnObj;
 }
 
@@ -365,36 +379,37 @@ Json::Value PimCalendarQt::DeleteCalendarEvent(const Json::Value& calEventObj)
     if (calEventObj.isMember("calEventId") && calEventObj["calEventId"].isInt() && calEventObj.isMember("accountId") && calEventObj["accountId"].isInt()) {
         int accountId = calEventObj["accountId"].asInt();
         int eventId = calEventObj["calEventId"].asInt();
-        MUTEX_LOCK();
-        bbpim::CalendarService* service = getCalendarService();
-        bbpim::CalendarEvent event = service->event(accountId, eventId);
 
-        if (event.isValid()) {
-            /*
-            bbpim::Notification notification;
-            notification.setComments(QString("This event was deleted by the WebWorks PIM Calendar API."));
-            notification.setNotifyAll(true);
-            notification.setAccountId(event.accountId());
-            notification.setMessageAccountId(event.accountId());
-            */
-            if (service->deleteEvent(event/*, notification*/) != bbpim::Result::Success) {
-                returnObj["_success"] = false;
-                returnObj["code"] = UNKNOWN_ERROR;
-                return returnObj;
+        if (MUTEX_LOCK() == 0) {
+            bbpim::CalendarService* service = getCalendarService();
+            bbpim::CalendarEvent event = service->event(accountId, eventId);
+
+            if (event.isValid()) {
+                /*
+                bbpim::Notification notification;
+                notification.setComments(QString("This event was deleted by the WebWorks PIM Calendar API."));
+                notification.setNotifyAll(true);
+                notification.setAccountId(event.accountId());
+                notification.setMessageAccountId(event.accountId());
+                */
+                if (service->deleteEvent(event/*, notification*/) == bbpim::Result::Success) {
+                    returnObj["_success"] = true;
+                }
             }
-            returnObj["_success"] = true;
-            return returnObj;
-        } else {
-            returnObj["_success"] = false;
-            returnObj["code"] = UNKNOWN_ERROR;
-            return returnObj;
+
+            MUTEX_UNLOCK();
         }
-        MUTEX_UNLOCK();
     } else {
         returnObj["_success"] = false;
         returnObj["code"] = INVALID_ARGUMENT_ERROR;
-        return returnObj;
     }
+
+    if (returnObj.empty()) {
+        returnObj["_success"] = false;
+        returnObj["code"] = UNKNOWN_ERROR;
+    }
+
+    return returnObj;
 }
 
 Json::Value PimCalendarQt::EditCalendarEvent(bbpim::CalendarEvent& calEvent, const Json::Value& attributeObj)
@@ -536,12 +551,16 @@ Json::Value PimCalendarQt::getCalendarFolderByFolderKey(bbpim::AccountId account
 
 void PimCalendarQt::lookupCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId) {
     std::string key = getFolderKeyStr(accountId, folderId);
+    QList<bbpim::CalendarFolder> folders;
 
     if (_allFoldersMap.empty()) {
-        MUTEX_LOCK();
-        bbpim::CalendarService* service = getCalendarService();
-        QList<bbpim::CalendarFolder> folders = service->folders();
-        MUTEX_UNLOCK();
+        if (MUTEX_LOCK() == 0) {
+            bbpim::CalendarService* service = getCalendarService();
+            folders = service->folders();
+            MUTEX_UNLOCK();
+        } else {
+            return;
+        }
 
         // populate map that contains all calendar folders
         for (QList<bbpim::CalendarFolder>::const_iterator i = folders.constBegin(); i != folders.constEnd(); i++) {
