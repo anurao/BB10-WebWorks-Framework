@@ -66,11 +66,11 @@ PimCalendarQt::~PimCalendarQt()
 
 int PimCalendarQt::MUTEX_LOCK()
 {
-    //struct timespec abs_time;
-    //clock_gettime(CLOCK_REALTIME , &abs_time);
-    //abs_time.tv_sec += 5;
-    //return pthread_mutex_timedlock (&_lock, &abs_time);
-    return pthread_mutex_trylock(&_lock);
+    struct timespec abs_time;
+    clock_gettime(CLOCK_REALTIME , &abs_time);
+    abs_time.tv_sec += 7;
+    return pthread_mutex_timedlock (&_lock, &abs_time);
+    //return pthread_mutex_trylock(&_lock);
 }
 
 int PimCalendarQt::MUTEX_UNLOCK()
