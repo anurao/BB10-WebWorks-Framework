@@ -41,6 +41,29 @@ var _config = require("./../../lib/config"),
 
         return orientation;
     },
+    translateToDeviceOrientation = function (orientation, fail) {
+        // Convert HTML5 orientation syntax into device syntax
+        switch (orientation) {
+        case 'portrait':
+        case 'portrait-primary':
+            return 'portrait';
+
+        case 'landscape':
+        case 'landscape-primary':
+            return 'landscape';
+
+        case 'portrait-secondary':
+            return 'bottom_up';
+
+        case 'landscape-secondary':
+            return 'left_up';
+
+        default:
+            // Invalid orientation type
+            fail(-1, "invalid orientation type");
+            return;
+        }
+    },
     _actionMap = {
         orientationchange: {
             context: _appEvents,
@@ -138,34 +161,9 @@ module.exports = {
     lockOrientation : function (success, fail, args, env) {
         var orientation = JSON.parse(decodeURIComponent(args.orientation)),
             receiveRotateEvents = JSON.parse(decodeURIComponent(args.receiveRotateEvents)),
-            rotateTo;
+            rotateTo = translateToDeviceOrientation(orientation);
 
-        // Convert HTML5 orientation syntax into device syntax
-        switch (orientation) {
-        case 'portrait':
-        case 'portrait-primary':
-            rotateTo = 'portrait';
-            break;
-
-        case 'landscape':
-        case 'landscape-primary':
-            rotateTo = 'landscape';
-            break;
-
-        case 'portrait-secondary':
-            rotateTo = 'bottom_up';
-            break;
-
-        case 'landscape-secondary':
-            rotateTo = 'left_up';
-            break;
-
-        default:
-            // Invalid orientation type
-            fail(-1, "invalid orientation type");
-            return;
-        }
-
+      
         // Force rotate to the given orientation then lock it
         qnx.webplatform.getApplication().rotate(rotateTo);
         qnx.webplatform.getApplication().lockRotation(receiveRotateEvents);
@@ -174,6 +172,12 @@ module.exports = {
 
     unlockOrientation : function (success, fail, args, env) {
         qnx.webplatform.getApplication().unlockRotation();
+        success();
+    },
+
+    rotate : function (success, fail, args, env) {
+        var orientation = translateToDeviceOrientation(JSON.parse(decodeURIComponent(args.orientation)), fail);
+        qnx.webplatform.getApplication().rotate(orientation);
         success();
     },
 

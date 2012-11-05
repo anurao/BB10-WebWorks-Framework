@@ -142,6 +142,18 @@ describe("app index", function () {
         });
     });
 
+    describe("rotate", function () {
+        it("calls webplatform rotate method", function () {
+            var success = jasmine.createSpy(),
+                fail = jasmine.createSpy();
+
+            index.rotate(success, fail, {orientation: encodeURIComponent("\"landscape\"")}, null);
+            expect(success).toHaveBeenCalled();
+            expect(fail).not.toHaveBeenCalled();
+            expect(mockedRotate).toHaveBeenCalledWith('landscape');
+        });
+    });
+
     describe("currentOrientation", function () {
         it("converts 0 degrees from window.orientation to portrait-primary", function () {
             var success = jasmine.createSpy(),

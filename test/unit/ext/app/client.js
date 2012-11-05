@@ -143,4 +143,13 @@ describe("app client", function () {
             expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "unlockOrientation");
         });
     });
+
+    describe("rotate", function () {
+        it("should call execSync", function () {
+            mockedWebworks.execSync = jasmine.createSpy();
+            GLOBAL.window.webworks = mockedWebworks;
+            client.rotate('landscape');
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "rotate", {orientation: 'landscape'});
+        });
+    });
 });

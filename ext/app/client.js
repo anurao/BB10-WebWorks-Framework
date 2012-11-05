@@ -62,10 +62,15 @@ function unlockOrientation() {
     window.webworks.execSync(ID, "unlockOrientation");
 }
 
+function rotate(orientation) {
+    window.webworks.execSync(ID, "rotate", {orientation: orientation});
+}
+
 // Orientation Properties
 Object.defineProperty(_self, "orientation", {"value": window.webworks.execSync(ID, "currentOrientation"), "writable": false});
 Object.defineProperty(_self, "lockOrientation", {"value": lockOrientation, "writable": false});
 Object.defineProperty(_self, "unlockOrientation", {"value": unlockOrientation, "writable": false});
+Object.defineProperty(_self, "rotate", {"value": rotate, "writable": false});
 
 window.webworks.execSync(ID, "registerEvents", null);
 
