@@ -92,7 +92,7 @@ module.exports = {
             "_eventId" : JSON.parse(decodeURIComponent(args._eventId))
         };
 
-        if (!checkPermission(success, attributes["_eventId"])) {
+        if (!checkPermission(success, attributes._eventId)) {
             return;
         }
 
@@ -120,10 +120,8 @@ module.exports = {
 
         if (results._success) {
             if (results.events) {
-                event = results.events[0];
-                event.folder = results.folders[event.accountId + "-" + event.folderId];
+                event = results.event;
             }
-            console.log(event);
             success(event);
         }
     },

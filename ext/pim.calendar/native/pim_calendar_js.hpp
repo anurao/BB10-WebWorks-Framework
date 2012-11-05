@@ -28,7 +28,7 @@ class PimCalendar : public JSExt
 {
 public:
     explicit PimCalendar(const std::string& id);
-    virtual ~PimCalendar() {}
+    virtual ~PimCalendar() {fprintf(stderr, "DEBUG: PimCalendar::~PimCalendar()\n");}
     virtual std::string InvokeMethod(const std::string& command);
     virtual bool CanDelete();
     void NotifyEvent(const std::string& eventId, const std::string& event);
