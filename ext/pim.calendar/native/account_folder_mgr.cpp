@@ -242,8 +242,8 @@ void AccountFolderManager::fetchDefaultFolder()
 	std::string key = GetFolderKey(accountId, folderId);
 	if (m_foldersMap.find(key) == m_foldersMap.end()) {
 		fetchFolders();
-		m_defaultFolder = m_foldersMap[key];
-	}
+    }
+    m_defaultFolder = m_foldersMap[key];
 }
 
 std::string AccountFolderManager::GetFolderKey(const bbpim::AccountId accountId, const bbpim::FolderId folderId)
