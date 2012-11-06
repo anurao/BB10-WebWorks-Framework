@@ -22,7 +22,6 @@ var LIB_FOLDER = "../../lib/",
 
 function show(success, fail, args, env) {
     var message,
-        toastId,
         buttonText,
         dismissHandler,
         callbackHandler;

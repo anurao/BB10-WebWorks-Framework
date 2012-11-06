@@ -35,7 +35,6 @@ function listenForDismissCallback() {
 }
 
 toast.show = function (message, buttonText, buttonCallback, dismissCallback) {
-
     try {
         var toastId = window.webworks.execSync(ID, 'show', {message: message, buttonText: buttonText});
 
