@@ -117,9 +117,10 @@ module.exports = {
         findOptions.accountId = JSON.parse(decodeURIComponent(args.folder)).accountId;
 
         results = pimCalendar.getEvent(findOptions);
+        console.log(results);
 
         if (results._success) {
-            if (results.events) {
+            if (results.event) {
                 event = results.event;
             }
             success(event);
