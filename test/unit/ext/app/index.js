@@ -31,7 +31,7 @@ function getWebPlatformEventName(e) {
     case "resume":
         return "active";
     case "orientationchange":
-        return "rotateDone";
+        return [ 'rotate', 'rotateWhenLocked' ];
     default:
         return e;
     }
@@ -40,7 +40,10 @@ function getWebPlatformEventName(e) {
 function testRegisterEvent(e) {
     var args = {eventName : encodeURIComponent(e)},
         success = jasmine.createSpy(),
-        utils = require(_libDir + "utils");
+        utils = require(_libDir + "utils"),
+        appEvents = require(_libDir + "events/applicationEvents");
+
+    spyOn(appEvents, "addEventListener");
 
     spyOn(utils, "loadExtensionModule").andCallFake(function () {
         return eventExt;
@@ -120,13 +123,12 @@ describe("app index", function () {
         it("calls webplatform rotate and lock methods", function () {
             var success = jasmine.createSpy(),
                 fail = jasmine.createSpy(),
-                mockArgs = {orientation : encodeURIComponent("\"landscape-primary\""), receiveRotateEvents: encodeURIComponent(false)};
+                mockArgs = { orientation : encodeURIComponent("\"landscape-primary\"") };
 
             index.lockOrientation(success, fail, mockArgs, null);
             expect(fail).not.toHaveBeenCalled();
             expect(success).toHaveBeenCalledWith(true);
             expect(mockedRotate).toHaveBeenCalledWith("landscape");
-            expect(mockedLockRotation).toHaveBeenCalledWith(false);
         });
     });
 
@@ -214,10 +216,6 @@ describe("app index", function () {
             spyOn(events, "remove");
         });
 
-        it("can register 'orientationchange' event", function () {
-            testRegisterEvent("orientationchange");
-        });
-
         it("can register 'pause' event", function () {
             testRegisterEvent("pause");
         });
@@ -248,10 +246,6 @@ describe("app index", function () {
 
         it("can register 'keyboardPosition' event", function () {
             testRegisterEvent("keyboardPosition");
-        });
-
-        it("can un-register 'orientationchange' event", function () {
-            testUnRegisterEvent("orientationchange");
         });
 
         it("can un-register 'pause' event", function () {

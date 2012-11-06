@@ -51,11 +51,7 @@ defineReadOnlyField("name");
 defineReadOnlyField("version");
 
 function lockOrientation(orientation, receiveRotateEvents) {
-    if (typeof receiveRotateEvents === "boolean") {
-        return window.webworks.execSync(ID, "lockOrientation", {orientation: orientation, receiveRotateEvents: receiveRotateEvents});
-    } else {
-        return window.webworks.execSync(ID, "lockOrientation", {orientation: orientation, receiveRotateEvents: false});
-    }
+    return window.webworks.execSync(ID, "lockOrientation", { orientation: orientation });
 }
 
 function unlockOrientation() {
