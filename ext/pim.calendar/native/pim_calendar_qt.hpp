@@ -84,23 +84,23 @@ private:
     static QVariant getFromMap(QMap<QString, QVariant> map, QStringList keys);
     static std::string getSafeString(const std::string& s);
     static std::string replaceAll(const std::string& s, const std::string& souce = "\"", const std::string& target = "\\\"");
-    static std::string getFolderKeyStr(bbpim::AccountId accountId, bbpim::FolderId folderId);
+    //static std::string getFolderKeyStr(bbpim::AccountId accountId, bbpim::FolderId folderId);
     static bool getSearchParams(bbpim::EventSearchParameters& searchParams, const Json::Value& args);
-    void lookupCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId);
-    static bool isDefaultCalendarFolder(const bbpim::CalendarFolder& folder);
-    static Json::Value getCalendarFolderJson(const bbpim::CalendarFolder& folder, bool skipDefaultCheck = false);
+    //void lookupCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId);
+    //static bool isDefaultCalendarFolder(const bbpim::CalendarFolder& folder);
+    //static Json::Value getCalendarFolderJson(const bbpim::CalendarFolder& folder, bool skipDefaultCheck = false);
     static QList<QDateTime> setEventFields(bbpim::CalendarEvent& ev, const Json::Value& args, Json::Value& returnObj);
     static bbpim::CalendarService* getCalendarService();
     static bbpimAccount::AccountService* getAccountService();
     Json::Value populateEvent(const bbpim::CalendarEvent& event, bool isFind);
-    Json::Value getCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId);
-    static Json::Value accountToJson(const bbpimAccount::Account account);
+    //Json::Value getCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId);
+    //static Json::Value accountToJson(const bbpimAccount::Account account);
 
     static int MUTEX_LOCK();
     static int MUTEX_UNLOCK();
 
-    std::map<std::string, bbpim::CalendarFolder> _allFoldersMap;
-    std::map<std::string, bbpim::CalendarFolder> _foldersMap;
+    //std::map<std::string, bbpim::CalendarFolder> _allFoldersMap;
+    //std::map<std::string, bbpim::CalendarFolder> _foldersMap;
 
     static AccountFolderManager _mgr;
     static ServiceProvider _provider;

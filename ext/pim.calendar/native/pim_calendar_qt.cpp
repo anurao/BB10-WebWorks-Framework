@@ -53,8 +53,8 @@ namespace webworks {
 
 
 ServiceProvider PimCalendarQt::_provider = ServiceProvider();
-AccountFolderManager PimCalendarQt::_mgr = AccountFolderManager();
 pthread_mutex_t PimCalendarQt::_lock = PTHREAD_MUTEX_INITIALIZER;
+AccountFolderManager PimCalendarQt::_mgr = AccountFolderManager(_provider, _lock);
 
 PimCalendarQt::PimCalendarQt() /*: _mgr(AccountFolderManager())*/
 {
@@ -68,7 +68,7 @@ int PimCalendarQt::MUTEX_LOCK()
 {
     struct timespec abs_time;
     clock_gettime(CLOCK_REALTIME , &abs_time);
-    abs_time.tv_sec += 7;
+    abs_time.tv_sec += 30;
     return pthread_mutex_timedlock (&_lock, &abs_time);
     //return pthread_mutex_trylock(&_lock);
 }
@@ -111,10 +111,12 @@ Json::Value PimCalendarQt::Find(const Json::Value& args)
         Json::Value folders;
         std::map<std::string, bbpim::CalendarFolder> localMap;
 
+        // fetch folders once to make sure the folders are fresh
+        _mgr.GetFolders();
+
         for (QList<bbpim::CalendarEvent>::const_iterator i = events.constBegin(); i != events.constEnd(); i++) {
             bbpim::CalendarEvent event = *i;
-            //lookupCalendarFolderByFolderKey(event.accountId(), event.folderId());
-            bbpim::CalendarFolder folder = _mgr.GetFolder(event.accountId(), event.folderId());
+            bbpim::CalendarFolder folder = _mgr.GetFolder(event.accountId(), event.folderId(), false);
             std::string key = _mgr.GetFolderKey(event.accountId(), event.folderId());
             localMap.insert(std::pair<std::string, bbpim::CalendarFolder>(key, folder));
             searchResults.append(populateEvent(event, true));
@@ -123,7 +125,7 @@ Json::Value PimCalendarQt::Find(const Json::Value& args)
         for (std::map<std::string, bbpim::CalendarFolder>::const_iterator j = localMap.begin(); j != localMap.end(); j++) {
             std::string key = j->first;
             bbpim::CalendarFolder folder = j->second;
-            folders[key] = _mgr.GetFolderJson(folder);
+            folders[key] = _mgr.GetFolderJson(folder, false);
         }
 
         returnObj["_success"] = true;
@@ -176,7 +178,7 @@ Json::Value PimCalendarQt::GetCalendarFolders()
     QList<bbpim::CalendarFolder> folderList =  _mgr.GetFolders();
 
     for (int i = 0; i < folderList.size(); i++) {
-        folders.append(_mgr.GetFolderJson(folderList[i]));
+        folders.append(_mgr.GetFolderJson(folderList[i], false));
     }
 
     return folders;
@@ -196,7 +198,7 @@ Json::Value PimCalendarQt::GetCalendarAccounts()
     Json::Value accounts;
     const QList<bbpimAccount::Account>accountList = _mgr.GetAccounts();
     for (int i = 0; i < accountList.size(); i++) {
-        accounts.append(_mgr.GetAccountJson(accountList[i]));
+        accounts.append(_mgr.GetAccountJson(accountList[i], false));
     }
 
     return accounts;
@@ -374,7 +376,7 @@ Json::Value PimCalendarQt::DeleteCalendarEvent(const Json::Value& calEventObj)
             bbpim::CalendarEvent event = service->event(accountId, eventId);
 
             if (event.isValid()) {
-                if (service->deleteEvent(event/*, notification*/) == bbpim::Result::Success) {
+                if (service->deleteEvent(event) == bbpim::Result::Success) {
                     returnObj["_success"] = true;
                 }
             }
@@ -451,32 +453,6 @@ int PimCalendarQt::strToInt(const std::string s) {
     return number;
 }
 
-Json::Value PimCalendarQt::accountToJson(const bbpimAccount::Account account)
-{
-    Json::Value accountJson;
-
-    accountJson["id"] = Json::Value(intToStr(account.id()));
-    accountJson["name"] = Json::Value(account.displayName().toStdString());
-    //accountJson["social"] = Json::Value(account.isSocial());
-    accountJson["enterprise"] = Json::Value(account.isEnterprise());
-
-    Json::Value accountFoldersArray;
-    bbpim::CalendarService* service = getCalendarService();
-    const QList<bbpim::CalendarFolder> folders = service->folders();
-    for (int i = 0; i < folders.size(); i++)
-    {
-        if ( folders[i].accountId() == account.id() ) {
-            accountFoldersArray.append(getCalendarFolderJson(folders[i]));
-        }
-    }
-    accountJson["folders"] = accountFoldersArray;
-    return accountJson;
-}
-
-bbpim::FolderId PimCalendarQt::intToFolderId(const quint32 id) {
-  return (id != UNDEFINED_UINT) ? bbpim::FolderId(id) : -1;
-}
-
 QVariant PimCalendarQt::getFromMap(QMap<QString, QVariant> map, QStringList keys) {
     QVariant variant;
     QMap<QString, QVariant> currentMap = map;
@@ -494,139 +470,6 @@ QVariant PimCalendarQt::getFromMap(QMap<QString, QVariant> map, QStringList keys
         }
     }
     return variant;
-}
-
-std::string PimCalendarQt::getFolderKeyStr(bbpim::AccountId accountId, bbpim::FolderId folderId) {
-    std::string str(intToStr(accountId));
-    str += '-';
-    str += intToStr(folderId);
-    return str;
-}
-
-Json::Value PimCalendarQt::getCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId) {
-    
-    bbpim::CalendarService* service = getCalendarService();
-    bbpim::Result::Type result;
-    QList<bbpim::CalendarFolder> folders = service->folders(&result);
-    Json::Value returnObj;
-
-    if (result == bbpim::Result::BackEndError) {
-        returnObj["_success"] = false;
-        returnObj["code"] = UNKNOWN_ERROR;
-        return returnObj;
-    }
-
-    // populate map that contains all calendar folders
-    for (QList<bbpim::CalendarFolder>::const_iterator i = folders.constBegin(); i != folders.constEnd(); i++) {
-        bbpim::CalendarFolder folder = *i;
-
-        if (folder.accountId() == accountId && folder.id() == folderId) {
-            return getCalendarFolderJson(folder);
-        }
-    }
-
-    return Json::Value();
-    
-    /*
-    bbpim::CalendarFolder folder = _mgr.GetFolder(accountId, folderId);
-    return _mgr.GetFolderJson(folder);
-    */
-}
-
-void PimCalendarQt::lookupCalendarFolderByFolderKey(bbpim::AccountId accountId, bbpim::FolderId folderId) {
-    std::string key = getFolderKeyStr(accountId, folderId);
-    QList<bbpim::CalendarFolder> folders;
-
-    if (_allFoldersMap.empty()) {
-        if (MUTEX_LOCK() == 0) {
-            bbpim::CalendarService* service = getCalendarService();
-            folders = service->folders();
-            MUTEX_UNLOCK();
-        } else {
-            return;
-        }
-
-        // populate map that contains all calendar folders
-        for (QList<bbpim::CalendarFolder>::const_iterator i = folders.constBegin(); i != folders.constEnd(); i++) {
-            bbpim::CalendarFolder folder = *i;
-            _allFoldersMap.insert(std::pair<std::string, bbpim::CalendarFolder>(getFolderKeyStr(folder.accountId(), folder.id()), folder));
-        }
-    }
-
-    if (_foldersMap.find(key) == _foldersMap.end()) {
-        _foldersMap.insert(FolderPair(key, _allFoldersMap[key]));
-    }
-}
-
-bool PimCalendarQt::isDefaultCalendarFolder(const bbpim::CalendarFolder& folder) {
-    bb::pim::account::AccountService* accountService = getAccountService();
-    bb::pim::account::Account defaultCalAccnt = accountService->defaultAccount(bb::pim::account::Service::Calendars);
-
-    return (folder.accountId() == defaultCalAccnt.id() &&
-        intToFolderId(accountService->getDefault(bb::pim::account::Service::Calendars)) == folder.id());
-}
-
-Json::Value PimCalendarQt::getCalendarFolderJson(const bbpim::CalendarFolder& folder, bool skipDefaultCheck) {
-    Json::Value f;
-/*
-    bb::pim::account::AccountService* accountService = getAccountService();
-    bb::pim::account::Account account = accountService->account(folder.accountId());
-    QVariantMap variantMap = account.rawData();
-
-    QMap<QString, QVariant> temp;
-    temp = variantMap.value("capabilities").toMap();
-    fprintf(stderr, "map is empty? %s\n", temp.empty() ? "true" : "false");
-    for (QMap<QString, QVariant>::const_iterator i = temp.constBegin(); i != temp.constEnd(); i++) {
-        fprintf(stderr, "Key: %s\n", i.key().toStdString().c_str());
-    }
-
-    QList<QString> keys;
-    QVariant value;
-
-    keys.clear();
-    keys << "capabilities" << "supports_infinite_recurrence";
-    value = getFromMap(variantMap, keys);
-    if (value.isValid() && value.type() == QVariant::Bool) {
-        f["supportsInfiniteRecurrence"] = value.toBool();
-    } else {
-        f["supportsInfiniteRecurrence"] = true; // assume true if not defined, as per Calendar app
-    }
-
-    keys.clear();
-    keys << "capabilities" << "supports_meeting_participants";
-    value = getFromMap(variantMap, keys);
-    if (value.isValid() && value.type() == QVariant::Bool) {
-        f["supportsParticipants"] = value.toBool();
-    } else {
-        f["supportsParticipants"] = true; // assume true if not defined, as per Calendar app
-    }
-
-    keys.clear();
-    keys << "messages" << "supported";
-    value = getFromMap(variantMap, keys);
-    if (value.isValid() && value.type() == QVariant::Bool) {
-        f["supportsMessaging"] = value.toBool();
-    } else {
-        f["supportsMessaging"] = false;
-    }
-
-    if (variantMap.contains("enterprise")) {
-        f["enterprise"] = variantMap.value("enterprise").toBool();
-    } else {
-        f["enterprise"] = false; // assume false if not defined
-    }
-*/
-    f["id"] = intToStr(folder.id());
-    f["accountId"] = intToStr(folder.accountId());
-    f["name"] = folder.name().toStdString();
-    f["readonly"] = folder.isReadOnly();
-    f["ownerEmail"] = folder.ownerEmail().toStdString();
-    f["type"] = folder.type();
-    f["color"] = QString("%1").arg(folder.color(), 6, 16, QChar('0')).toUpper().toStdString();
-    f["visible"] = folder.isVisible();
-    f["default"] = skipDefaultCheck ? true : isDefaultCalendarFolder(folder);
-
-    return f;
 }
 
 bool PimCalendarQt::getSearchParams(bbpim::EventSearchParameters& searchParams, const Json::Value& args) {
@@ -877,7 +720,7 @@ Json::Value PimCalendarQt::populateEvent(const bbpim::CalendarEvent& event, bool
 
     if (!isFind) {
         bbpim::CalendarFolder folder = _mgr.GetFolder(event.accountId(), event.folderId());
-        e["folder"] = _mgr.GetFolderJson(folder); //getCalendarFolderByFolderKey(event.accountId(), event.folderId());
+        e["folder"] = _mgr.GetFolderJson(folder, false); //getCalendarFolderByFolderKey(event.accountId(), event.folderId());
     }
 
     e["folderId"] = intToStr(event.folderId());

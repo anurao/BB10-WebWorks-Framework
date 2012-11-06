@@ -28,7 +28,8 @@
 QString TimezoneUtils::getCurrentTimezone()
 {
     bb::pim::calendar::CalendarService service;
-    return service.settings().timezoneDatabaseId();
+//    return service.settings().timezoneDatabaseId();
+    return service.settings().currentSystemTimezone();
 }
 
 int TimezoneUtils::offsetFromUtcToTz(QDateTime date, QString timezoneId, bool ignoreDstOffset, bool* error)

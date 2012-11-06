@@ -10,7 +10,7 @@
 #include <bb/pim/calendar/CalendarFolder>
 #include <bb/pim/calendar/CalendarService>
 
-//#include "service_provider.hpp"
+#include "service_provider.hpp"
 
 namespace bbpim = bb::pim::calendar;
 namespace bbpimAccount = bb::pim::account;
@@ -24,17 +24,17 @@ struct AccountInfo {
 */
 class AccountFolderManager {
 public:
-	AccountFolderManager(/*ServiceProvider provider*/);
-	bbpimAccount::Account GetAccount(bbpim::AccountId accountId);
-	bbpimAccount::Account GetDefaultAccount();
-	QList<bbpimAccount::Account> GetAccounts();
-	bbpim::CalendarFolder GetFolder(bbpim::AccountId accountId, bbpim::FolderId folderId);
-	bbpim::CalendarFolder GetDefaultFolder();
-	QList<bbpim::CalendarFolder> GetFolders();
-	QList<bbpim::CalendarFolder> GetFoldersForAccount(bbpim::AccountId accountId);
-	bool IsDefaultFolder(const bbpim::CalendarFolder& folder);
-	Json::Value GetFolderJson(const bbpim::CalendarFolder& folder, bool skipDefaultCheck = false);
-	Json::Value GetAccountJson(const bbpimAccount::Account& account);
+	AccountFolderManager(ServiceProvider& provider, pthread_mutex_t& lock);
+	bbpimAccount::Account GetAccount(bbpim::AccountId accountId, bool fresh = true);
+	bbpimAccount::Account GetDefaultAccount(bool fresh = true);
+	QList<bbpimAccount::Account> GetAccounts(bool fresh = true);
+	bbpim::CalendarFolder GetFolder(bbpim::AccountId accountId, bbpim::FolderId folderId, bool fresh = true);
+	bbpim::CalendarFolder GetDefaultFolder(bool fresh = true);
+	QList<bbpim::CalendarFolder> GetFolders(bool fresh = true);
+	QList<bbpim::CalendarFolder> GetFoldersForAccount(bbpim::AccountId accountId, bool fresh = true);
+	bool IsDefaultFolder(const bbpim::CalendarFolder& folder, bool fresh = true);
+	Json::Value GetFolderJson(const bbpim::CalendarFolder& folder, bool skipDefaultCheck = false, bool fresh = true);
+	Json::Value GetAccountJson(const bbpimAccount::Account& account, bool fresh = true);
 	static std::string GetFolderKey(const bbpim::AccountId accountId, const bbpim::FolderId);
 
 private:
@@ -46,6 +46,9 @@ private:
 	void fetchDefaultAccount();
 	void fetchDefaultFolder();
 
+    int MUTEX_LOCK();
+    int MUTEX_UNLOCK();
+
 	bbpim::CalendarService* m_calendarService;
 	bbpimAccount::AccountService* m_accountService;
 
@@ -54,8 +57,8 @@ private:
 	//std::map<bbpim::AccountId, AccountInfo> m_accountInfoMap;
 	bbpimAccount::Account m_defaultAccount;
 	bbpim::CalendarFolder m_defaultFolder;
-	//ServiceProvider m_provider;
-	static pthread_mutex_t m_lock;
+	ServiceProvider m_provider;
+	pthread_mutex_t m_lock;
 };
 
 #endif // PIM_CALENDAR_ACCT_FOLDER_MGR_HPP_
