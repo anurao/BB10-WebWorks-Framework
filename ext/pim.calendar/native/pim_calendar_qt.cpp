@@ -205,7 +205,6 @@ Json::Value PimCalendarQt::GetCalendarAccounts()
 Json::Value PimCalendarQt::GetDefaultCalendarAccount()
 {
     Json::Value defaultAccount;
-//    bbpimAccount::Account defaultAccount = bbpimAccount::AccountService().defaultAccount(bbpimAccount::Service::Calendars);
     defaultAccount = _mgr.GetAccountJson(_mgr.GetDefaultAccount());
     return defaultAccount;
 }
@@ -222,17 +221,14 @@ Json::Value PimCalendarQt::GetEvent(const Json::Value& args)
             bbpim::Result::Type result;
             bbpim::AccountId accountId = strToInt(args["accountId"].asString());
             bbpim::EventId eventId = strToInt(args["eventId"].asString());
-fprintf(stderr, "DEBUG: PimCalendarQt::GetEvent(): 0\n");
-            // if (MUTEX_LOCK()) {
-fprintf(stderr, "DEBUG: PimCalendarQt::GetEvent(): 1\n");
+            if (MUTEX_LOCK() == 0) {
                 event = service->event(accountId, eventId, &result);
-                // MUTEX_UNLOCK();
-fprintf(stderr, "DEBUG: PimCalendarQt::GetEvent(): 2\n");
+                MUTEX_UNLOCK();
                 if (result == bbpim::Result::Success) {
                     returnObj["_success"] = true;
                     returnObj["event"] = populateEvent(event, false);
                 }
-            // } 
+            }
         } catch(int e) {
             returnObj["_success"] = false;
             returnObj["code"] = INVALID_ARGUMENT_ERROR;
@@ -378,13 +374,6 @@ Json::Value PimCalendarQt::DeleteCalendarEvent(const Json::Value& calEventObj)
             bbpim::CalendarEvent event = service->event(accountId, eventId);
 
             if (event.isValid()) {
-                /*
-                bbpim::Notification notification;
-                notification.setComments(QString("This event was deleted by the WebWorks PIM Calendar API."));
-                notification.setNotifyAll(true);
-                notification.setAccountId(event.accountId());
-                notification.setMessageAccountId(event.accountId());
-                */
                 if (service->deleteEvent(event/*, notification*/) == bbpim::Result::Success) {
                     returnObj["_success"] = true;
                 }
