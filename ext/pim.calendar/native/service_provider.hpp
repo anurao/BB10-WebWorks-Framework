@@ -22,14 +22,17 @@
 
 class ServiceProvider {
 public:
-    ServiceProvider();
-    ~ServiceProvider();
+    static ServiceProvider &getServiceProvider();
     bb::pim::calendar::CalendarService* GetCalendarService();
     bb::pim::account::AccountService* GetAccountService();
 
 private:
     bb::pim::calendar::CalendarService* m_calendarService;
     bb::pim::account::AccountService* m_accountService;
+    ServiceProvider();
+    ~ServiceProvider();
+    ServiceProvider(ServiceProvider const&);
+    void operator=(ServiceProvider const&);
 };
 
 #endif // PIM_CAL_SERVICE_PROVIDER_HPP_
