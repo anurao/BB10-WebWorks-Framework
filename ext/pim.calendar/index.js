@@ -62,6 +62,19 @@ module.exports = {
             return;
         }
 
+        try {
+            parsedArgs.options.sourceTimezone = window.qnx.webplatform.device.timezone;
+        } catch (e) {
+            _event.trigger(eventId, {
+                "result": escape(JSON.stringify({
+                    "_success": false,
+                    "code": CalendarError.UNKNOWN_ERROR
+                }))
+            });
+            success();
+            return;
+        }
+
         pimCalendar.find(parsedArgs);
 
         success();
@@ -79,6 +92,25 @@ module.exports = {
 
         if (!checkPermission(success, attributes._eventId)) {
             return;
+        }
+
+        try {
+            attributes.sourceTimezone = window.qnx.webplatform.device.timezone;
+        } catch (e) {
+            _event.trigger(eventId, {
+                "result": escape(JSON.stringify({
+                    "_success": false,
+                    "code": CalendarError.UNKNOWN_ERROR
+                }))
+            });
+            success();
+            return;
+        }
+
+        if (attributes.timezone) {
+            attributes.targetTimezone = attributes.timezone;
+        } else {
+            attributes.targetTimezone = "";
         }
 
         pimCalendar.save(attributes);

@@ -894,7 +894,7 @@ describe("blackberry.pim.calendar", function () {
                 summary = "WebWorksTest recurring event no constructor",
                 rule = {
                     "frequency": CalendarRepeatRule.FREQUENCY_MONTHLY,
-                    "expires": new Date("Dec 31, 2013"),
+                    "expires": new Date("Dec 31, 2014"),
                     "numberOfOccurrences": 4
                 },
                 called = false,

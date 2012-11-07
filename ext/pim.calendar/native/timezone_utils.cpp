@@ -14,23 +14,10 @@
  * limitations under the License.
  */
 
-#include <bb/pim/calendar/CalendarService>
-#include <bb/pim/calendar/CalendarSettings>
-#include <bb/pim/calendar/Result>
 #include <unicode/calendar.h>
 #include <unicode/timezone.h>
-#include <qDebug>
-#include <QTextStream>
-#include <QFile>
 
 #include "timezone_utils.hpp"
-
-QString TimezoneUtils::getCurrentTimezone()
-{
-    bb::pim::calendar::CalendarService service;
-//    return service.settings().timezoneDatabaseId();
-    return service.settings().currentSystemTimezone();
-}
 
 int TimezoneUtils::offsetFromUtcToTz(QDateTime date, QString timezoneId, bool ignoreDstOffset, bool* error)
 {
@@ -88,10 +75,6 @@ int TimezoneUtils::offsetFromUtcToTz(QDateTime date, QString timezoneId, bool ig
 
 QDateTime TimezoneUtils::ConvertToTargetFromUtc(QDateTime date, bool ignoreDstOffset, QString targetTimezoneId, QString sourceTimezoneId)
 {
-    if (sourceTimezoneId == "") {
-        sourceTimezoneId = getCurrentTimezone();
-    }
-
     if (targetTimezoneId == "") {
         targetTimezoneId = sourceTimezoneId;
     }

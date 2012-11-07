@@ -188,7 +188,7 @@ Json::Value PimCalendarQt::GetDefaultCalendarFolder()
 {
     Json::Value defaultFolder;
 
-    defaultFolder = _mgr.GetFolderJson(_mgr.GetDefaultFolder());
+    defaultFolder = _mgr.GetFolderJson(_mgr.GetDefaultFolder(), true, false);
 
     return defaultFolder;
 }
@@ -207,7 +207,7 @@ Json::Value PimCalendarQt::GetCalendarAccounts()
 Json::Value PimCalendarQt::GetDefaultCalendarAccount()
 {
     Json::Value defaultAccount;
-    defaultAccount = _mgr.GetAccountJson(_mgr.GetDefaultAccount());
+    defaultAccount = _mgr.GetAccountJson(_mgr.GetDefaultAccount(true));
     return defaultAccount;
 }
 
@@ -296,9 +296,11 @@ Json::Value PimCalendarQt::CreateCalendarEvent(const Json::Value& args)
     bbpim::CalendarService *service = getCalendarService();
 
     if (args.isMember("parentId") && !args["parentId"].isNull() && args["parentId"].asInt() != 0) {
-        QString timezone = QString(args["timezone"].asCString());
+        QString targetTimezone = QString(args["targetTimezone"].asCString());
+        QString sourceTimezone = QString(args["sourceTimezone"].asCString());
+
 	    if (MUTEX_LOCK() == 0) {
-            bbpim::Result::Type result = service->createRecurrenceException(ev, TimezoneUtils::ConvertToTargetFromUtc(getDate(args["originalStartTime"]), true, timezone));
+            bbpim::Result::Type result = service->createRecurrenceException(ev, TimezoneUtils::ConvertToTargetFromUtc(getDate(args["originalStartTime"]), true, targetTimezone, sourceTimezone));
             MUTEX_UNLOCK();
             if (result != bbpim::Result::Success) {
                 returnObj["_success"] = false;
@@ -492,16 +494,18 @@ bool PimCalendarQt::getSearchParams(bbpim::EventSearchParameters& searchParams, 
 
         // filter - start - optional
         if (!filter["start"].empty()) {
+            QString sourceTimezone = QString(options["sourceTimezone"].asCString());
             QDateTime date = getDate(filter["start"].asCString());
-            searchParams.setStart(TimezoneUtils::ConvertToTargetFromUtc(date, false)); // TODO(rtse): check
+            searchParams.setStart(TimezoneUtils::ConvertToTargetFromUtc(date, false, "", sourceTimezone)); // TODO(rtse): check
         } else {
             searchParams.setStart(now.addYears(-100));
         }
 
         // filter - end - optional
         if (!filter["end"].empty()) {
+            QString sourceTimezone = QString(options["sourceTimezone"].asCString());
             QDateTime date = getDate(filter["end"].asCString());
-            searchParams.setEnd(TimezoneUtils::ConvertToTargetFromUtc(date, false)); // TODO(rtse): check
+            searchParams.setEnd(TimezoneUtils::ConvertToTargetFromUtc(date, false, "", sourceTimezone)); // TODO(rtse): check
         } else {
             searchParams.setEnd(now.addYears(100));
         }
@@ -565,18 +569,21 @@ bool PimCalendarQt::getSearchParams(bbpim::EventSearchParameters& searchParams, 
 QList<QDateTime> PimCalendarQt::setEventFields(bbpim::CalendarEvent& ev, const Json::Value& args, Json::Value& returnObj)
 {
     QList<QDateTime> exceptionDates;
-    QString timezone = "";
+    QString targetTimezone = "";
 
-    if (args.isMember("timezone") && args["timezone"].isString()) {
-        timezone = QString(args["timezone"].asCString());
-        ev.setTimezone(timezone);
+    // source timezone is ALWAYS set in index.js
+    QString sourceTimezone = QString(args["sourceTimezone"].asCString());
+
+    if (args.isMember("targetTimezone") && args["targetTimezone"].isString()) {
+        targetTimezone = QString(args["targetTimezone"].asCString());
+        ev.setTimezone(targetTimezone);
     }
 
     QDateTime startTime = getDate(args["start"]);
     QDateTime endTime = getDate(args["end"]);
 
-    ev.setStartTime(TimezoneUtils::ConvertToTargetFromUtc(startTime, false, timezone));
-    ev.setEndTime(TimezoneUtils::ConvertToTargetFromUtc(endTime, false, timezone));
+    ev.setStartTime(TimezoneUtils::ConvertToTargetFromUtc(startTime, false, targetTimezone, sourceTimezone));
+    ev.setEndTime(TimezoneUtils::ConvertToTargetFromUtc(endTime, false, targetTimezone, sourceTimezone));
 
     if (args.isMember("allDay") && args["allDay"].isBool()) {
         ev.setAllDay(args["allDay"].asBool());
@@ -618,7 +625,7 @@ QList<QDateTime> PimCalendarQt::setEventFields(bbpim::CalendarEvent& ev, const J
         recurrence.setInterval(recArgs.get("interval", 1).asInt());
 
         if (recArgs.isMember("expires") && !recArgs["expires"].isNull()) {
-            recurrence.setUntil(TimezoneUtils::ConvertToTargetFromUtc(getDate(recArgs["expires"]), false, timezone));
+            recurrence.setUntil(TimezoneUtils::ConvertToTargetFromUtc(getDate(recArgs["expires"]), false, targetTimezone, sourceTimezone));
         }
 
         if (recArgs.isMember("numberOfOccurrences") && !recArgs["numberOfOccurrences"].isNull()) {
@@ -632,7 +639,7 @@ QList<QDateTime> PimCalendarQt::setEventFields(bbpim::CalendarEvent& ev, const J
 
         // Note: exceptionDates cannot be added manually. They must be added using CalendarService::createRecurrenceExclusion
         for (unsigned int i = 0; i < recArgs["exceptionDates"].size(); i++) {
-            exceptionDates.append(TimezoneUtils::ConvertToTargetFromUtc(getDate(recArgs["exceptionDates"][i]), true, timezone));
+            exceptionDates.append(TimezoneUtils::ConvertToTargetFromUtc(getDate(recArgs["exceptionDates"][i]), true, targetTimezone, sourceTimezone));
         }
 
         if (!recurrence.isValid()) {
@@ -675,8 +682,8 @@ QList<QDateTime> PimCalendarQt::setEventFields(bbpim::CalendarEvent& ev, const J
         }
 
         ev.setId(args["parentId"].asInt());
-        ev.setStartTime(TimezoneUtils::ConvertToTargetFromUtc(startTime, true, timezone));
-        ev.setEndTime(TimezoneUtils::ConvertToTargetFromUtc(endTime, true, timezone));
+        ev.setStartTime(TimezoneUtils::ConvertToTargetFromUtc(startTime, true, targetTimezone, sourceTimezone));
+        ev.setEndTime(TimezoneUtils::ConvertToTargetFromUtc(endTime, true, targetTimezone, sourceTimezone));
     }
 
     return exceptionDates;

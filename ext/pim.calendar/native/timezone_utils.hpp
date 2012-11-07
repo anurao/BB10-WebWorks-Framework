@@ -23,10 +23,9 @@
 
 class TimezoneUtils {
 public:
-    static QDateTime ConvertToTargetFromUtc(QDateTime date, bool ignoreDstOffset, QString targetTimezoneId = "", QString sourceTimezoneId = "");
+    static QDateTime ConvertToTargetFromUtc(QDateTime date, bool ignoreDstOffset, QString targetTimezoneId, QString sourceTimezoneId);
 
 private:
-    static QString getCurrentTimezone();
     static int offsetFromUtcToTz(QDateTime date, QString timezoneId, bool ignoreDstOffset, bool* error);
 };
 
