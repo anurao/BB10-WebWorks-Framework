@@ -121,10 +121,24 @@ module.exports = {
         var attributes = {
             "accountId" : JSON.parse(decodeURIComponent(args.accountId)),
             "calEventId" : JSON.parse(decodeURIComponent(args.calEventId)),
-            "_eventId" : JSON.parse(decodeURIComponent(args._eventId))
+            "_eventId" : JSON.parse(decodeURIComponent(args._eventId)),
+            "dateToRemove" : JSON.parse(decodeURIComponent(args.dateToRemove))
         };
 
         if (!checkPermission(success, attributes._eventId)) {
+            return;
+        }
+
+        try {
+            attributes.sourceTimezone = window.qnx.webplatform.device.timezone;
+        } catch (e) {
+            _event.trigger(eventId, {
+                "result": escape(JSON.stringify({
+                    "_success": false,
+                    "code": CalendarError.UNKNOWN_ERROR
+                }))
+            });
+            success();
             return;
         }
 

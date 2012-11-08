@@ -372,18 +372,45 @@ Json::Value PimCalendarQt::DeleteCalendarEvent(const Json::Value& calEventObj)
     if (calEventObj.isMember("calEventId") && calEventObj["calEventId"].isInt() && calEventObj.isMember("accountId") && calEventObj["accountId"].isInt()) {
         int accountId = calEventObj["accountId"].asInt();
         int eventId = calEventObj["calEventId"].asInt();
+        bool removeAll = calEventObj.isMember("removeAll") && calEventObj["removeAll"].asBool();
 
-        if (MUTEX_LOCK() == 0) {
-            bbpim::CalendarService* service = getCalendarService();
-            bbpim::CalendarEvent event = service->event(accountId, eventId);
+        if (removeAll) {
+            if (MUTEX_LOCK() == 0) {
+                bbpim::CalendarService* service = getCalendarService();
+                bbpim::CalendarEvent event = service->event(accountId, eventId);
 
-            if (event.isValid()) {
-                if (service->deleteEvent(event) == bbpim::Result::Success) {
-                    returnObj["_success"] = true;
+                if (event.isValid()) {
+                    if (service->deleteEvent(event) == bbpim::Result::Success) {
+                        returnObj["_success"] = true;
+                    }
                 }
-            }
 
-            MUTEX_UNLOCK();
+                MUTEX_UNLOCK();
+            }
+        } else {
+            if (calEventObj.isMember("sourceTimezone") && calEventObj["sourceTimezone"].isString() &&
+                calEventObj.isMember("dateToRemove") && calEventObj["dateToRemove"].isString()) {
+                QString sourceTimezone = QString(calEventObj["sourceTimezone"].asCString());
+                QDateTime dateToRemove = TimezoneUtils::ConvertToTargetFromUtc(getDate(calEventObj["dateToRemove"]), false, "", sourceTimezone);
+
+                if (MUTEX_LOCK() == 0) {
+                    bbpim::CalendarService* service = getCalendarService();
+                    bbpim::CalendarEvent occurrence;
+
+                    occurrence.setStartTime(dateToRemove);
+                    occurrence.setId(eventId);
+                    occurrence.setAccountId(accountId);
+
+                    if (service->createRecurrenceExclusion(occurrence) == bbpim::Result::Success) {
+                        returnObj["_success"] = true;
+                    }
+
+                    MUTEX_UNLOCK();
+                }
+            } else {
+                returnObj["_success"] = false;
+                returnObj["code"] = INVALID_ARGUMENT_ERROR;
+            }
         }
     } else {
         returnObj["_success"] = false;
@@ -417,8 +444,9 @@ Json::Value PimCalendarQt::EditCalendarEvent(bbpim::CalendarEvent& calEvent, con
                 exceptionEvent.setStartTime(exceptionDates[i]);
                 exceptionEvent.setId(calEvent.id());
                 exceptionEvent.setAccountId(calEvent.accountId());
+
                 if (MUTEX_LOCK() == 0) { 
-                    service->createRecurrenceExclusion(exceptionEvent);
+                    result = service->createRecurrenceExclusion(exceptionEvent);
                     MUTEX_UNLOCK();
                 }
             }
@@ -639,7 +667,7 @@ QList<QDateTime> PimCalendarQt::setEventFields(bbpim::CalendarEvent& ev, const J
 
         // Note: exceptionDates cannot be added manually. They must be added using CalendarService::createRecurrenceExclusion
         for (unsigned int i = 0; i < recArgs["exceptionDates"].size(); i++) {
-            exceptionDates.append(TimezoneUtils::ConvertToTargetFromUtc(getDate(recArgs["exceptionDates"][i]), true, targetTimezone, sourceTimezone));
+            exceptionDates.append(TimezoneUtils::ConvertToTargetFromUtc(getDate(recArgs["exceptionDates"][i]), false/*true*/, targetTimezone, sourceTimezone));
         }
 
         if (!recurrence.isValid()) {

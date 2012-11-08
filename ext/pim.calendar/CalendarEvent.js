@@ -156,9 +156,6 @@ CalendarEvent.prototype.save = function (onSaveSuccess, onSaveError) {
 
     args._eventId = utils.guid();
 
-    //console.log("args to come");
-    //console.log(args);
-
     saveCallback = function (args) {
         var result = JSON.parse(unescape(args.result)),
             errorObj,
@@ -184,7 +181,7 @@ CalendarEvent.prototype.save = function (onSaveSuccess, onSaveError) {
     return window.webworks.execAsync(_ID, "save", args);
 };
 
-CalendarEvent.prototype.remove = function (onRemoveSuccess, onRemoveError) {
+CalendarEvent.prototype.remove = function (onRemoveSuccess, onRemoveError, removeAll) {
     var args = {},
         successCallback = onRemoveSuccess,
         errorCallback = onRemoveError,
@@ -201,6 +198,16 @@ CalendarEvent.prototype.remove = function (onRemoveSuccess, onRemoveError) {
     args.accountId = window.parseInt(this.folder.accountId);
     args.calEventId = window.parseInt(this.id);
     args._eventId = utils.guid();
+
+    // if event is not recurring, always remove all
+    removeAll = !(this.recurrence && typeof removeAll === "boolean" && !removeAll);
+
+    args.removeAll = removeAll;
+
+    if (!removeAll) {
+        // user only wants to remove the current instance, not the all occurrences
+        args.dateToRemove = calendarUtils.preprocessDate(this.start);
+    }
 
     removeCallback = function (args) {
         var result = JSON.parse(unescape(args.result)),
@@ -244,7 +251,7 @@ CalendarEvent.prototype.createExceptionEvent = function (originalStartTime) {
     properties.parentId = this.id;
     properties.originalStartTime = originalStartTime;
 
-    exceptionEvent = new CalendarEvent(properties);
+    exceptionEvent = new CalendarEvent(properties); // leaving out recurrence deliberately
 
     if (!this.recurrence) {
         this.recurrence = new CalendarRepeatRule();
