@@ -65,6 +65,19 @@ _self.invokeFilePicker = function (options, done, cancel, invokeCallback) {
     return window.webworks.execAsync(_ID, "invokeFilePicker", {options: options || ""});
 };
 
+_self.invokeTargetPicker = function (request, title, success, error) {
+    var returnVal;
+    try {
+        returnVal = window.webworks.execSync(_ID, "invokeTargetPicker", {
+            request: request,
+            title: title
+        });
+        success(returnVal);
+    } catch (e) {
+        error(e);
+    }
+};
+
 //CAMERA PROPERTIES
 window.webworks.defineReadOnlyField(_self, "CAMERA_MODE_PHOTO", 'photo');
 window.webworks.defineReadOnlyField(_self, "CAMERA_MODE_VIDEO", 'video');

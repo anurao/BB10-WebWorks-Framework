@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var _event = require("../../lib/event");
+var _event = require("../../lib/event"),
+    overlayWebView;
+
+qnx.webplatform.getController().addEventListener('overlayWebView.initialized', function (webviewObj) {
+    overlayWebView = webviewObj;
+});
 
 module.exports = {
     invokeCamera: function (success, fail, args) {
@@ -44,6 +49,13 @@ module.exports = {
             };
 
         window.qnx.webplatform.getApplication().cards.filePicker.open(options, done, cancel, invokeCallback);
+        success();
+    },
+
+    invokeTargetPicker: function (success, fail, args) {
+        var title = decodeURIComponent(args.title),
+            request = JSON.parse(decodeURIComponent(args.request));
+        overlayWebView.invocationlist.show(request, title, success, fail);
         success();
     }
 };
