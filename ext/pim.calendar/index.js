@@ -65,7 +65,7 @@ module.exports = {
         try {
             parsedArgs.options.sourceTimezone = window.qnx.webplatform.device.timezone;
         } catch (e) {
-            _event.trigger(eventId, {
+            _event.trigger(parsedArgs._eventId, {
                 "result": escape(JSON.stringify({
                     "_success": false,
                     "code": CalendarError.UNKNOWN_ERROR
@@ -97,7 +97,7 @@ module.exports = {
         try {
             attributes.sourceTimezone = window.qnx.webplatform.device.timezone;
         } catch (e) {
-            _event.trigger(eventId, {
+            _event.trigger(attributes._eventId, {
                 "result": escape(JSON.stringify({
                     "_success": false,
                     "code": CalendarError.UNKNOWN_ERROR
@@ -122,17 +122,21 @@ module.exports = {
             "accountId" : JSON.parse(decodeURIComponent(args.accountId)),
             "calEventId" : JSON.parse(decodeURIComponent(args.calEventId)),
             "_eventId" : JSON.parse(decodeURIComponent(args._eventId)),
-            "dateToRemove" : JSON.parse(decodeURIComponent(args.dateToRemove))
+            "removeAll" : JSON.parse(decodeURIComponent(args.removeAll))
         };
 
         if (!checkPermission(success, attributes._eventId)) {
             return;
         }
 
+        if (args.hasOwnProperty("dateToRemove")) {
+            attributes.dateToRemove = JSON.parse(decodeURIComponent(args.dateToRemove));
+        }
+
         try {
             attributes.sourceTimezone = window.qnx.webplatform.device.timezone;
         } catch (e) {
-            _event.trigger(eventId, {
+            _event.trigger(attributes._eventId, {
                 "result": escape(JSON.stringify({
                     "_success": false,
                     "code": CalendarError.UNKNOWN_ERROR
