@@ -33,7 +33,7 @@ describe("ui.toast", function () {
         mockedWebworks = {
             execSync: jasmine.createSpy(),
             event: {
-                add: function (feature, name, callack) {
+                add: function (feature, name, callback) {
                     danielCraig();
                     return;
                 }
