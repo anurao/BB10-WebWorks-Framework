@@ -123,17 +123,21 @@ module.exports = {
             var index,
                 promptText;
 
-            if (result.ok) {
-                index = 0;  
-            } else if (result.cancel) {
-                index = 1;
-            } else {
-                index = 2;
-            }
-
-            if (args.type !== 5) {
+            if (args.type !== 5) { //type 5 is Prompt Box requiring a differnt return
+                if (result.ok) {
+                    index = 0;  
+                } else if (result.cancel) {
+                    index = 1;
+                } else {
+                    index = 2;
+                }
                 _event.trigger(args.eventId, index);
             } else {
+                if (result.ok) {
+                    index = 1;  
+                } else if (result.cancel) {
+                    index = 0;
+                } 
                 promptText = decodeURIComponent(result.oktext);
                 _event.trigger(args.eventId, index, promptText); 
             }
