@@ -43,8 +43,8 @@ toast = {
     show : show
 };
 
-qnx.webplatform.getController().addEventListener('ui.init', function () {
-    _overlayWebView = require(LIB_FOLDER + 'overlayWebView');
+qnx.webplatform.getController().addEventListener('overlayWebView.initialized', function (webview) {
+    _overlayWebView = webview;
 });
 
 module.exports = toast;

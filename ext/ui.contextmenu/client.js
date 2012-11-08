@@ -23,7 +23,7 @@ function defineReadOnlyField(field) {
 }
 
 function listen() {
-    window.blackberry.event.addEventListener('contextmenu.executeMenuAction', function (actionId) {
+    window.webworks.event.add("blackberry.event", 'contextmenu.executeMenuAction', function (actionId) {
         _storedCallbacks[actionId]();
     });
 }

@@ -29,8 +29,10 @@ var _extDir = __dirname + "./../../../../ext/",
             getController: function () {
                 return {
                     addEventListener: function (eventType, callback) {
-                        callback();
-                    }
+                        callback({
+                            contextMenu : mockedContextMenu
+                        });
+                    },
                 };
             },
             createUIWebView: function () {
@@ -53,6 +55,8 @@ describe("blackberry.ui.contextmenu index", function () {
     });
 
     afterEach(function () {
+        GLOBAL.window = null;
+        GLOBAL.qnx = null;
         success.reset();
         fail.reset();
     });

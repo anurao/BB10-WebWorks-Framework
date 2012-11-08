@@ -31,17 +31,16 @@ describe("ui.toast", function () {
         danielCraig = jasmine.createSpy();
 
         mockedWebworks = {
-            execSync: jasmine.createSpy()
-        };
-
-        mockBlackberry = {
+            execSync: jasmine.createSpy(),
             event: {
-                addEventListener: danielCraig
+                add: function (feature, name, callack) {
+                    danielCraig();
+                    return;
+                }
             }
         };
 
         GLOBAL.window.webworks = mockedWebworks;
-        GLOBAL.window.blackberry = mockBlackberry;
     });
 
     it("creates a simple toast", function () {

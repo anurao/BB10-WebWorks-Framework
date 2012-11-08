@@ -16,14 +16,43 @@
 
 var root = __dirname + "/../../../../",
     webview = require(root + "lib/webview"),
-    overlayWebView = require(root + "lib/overlayWebView"),
+    overlayWebView,
     index;
 
 describe("ui.toast index", function () {
+    var mockedOverlayWebview,
+        mockQnx,
+        mockedToast;
+
     beforeEach(function () {
-        //Set up mocking, no need to "spyOn" since spies are included in mock
+        mockedOverlayWebview = {
+            showToast: function () {}
+        };
+
+        mockQnx = {
+            webplatform: {
+                getController: function () {
+                    return {
+                        addEventListener: function (eventType, callback) {
+                            callback(mockedOverlayWebview);
+                        }
+                    };
+                },
+                createUIWebView: function () {
+                    return {
+                        toast : mockedToast
+                    };
+                }
+            }
+        };
+
+        GLOBAL.window = {
+            qnx: mockQnx
+        };
+
+        GLOBAL.qnx = mockQnx;
+
         index = require(root + "ext/ui.toast/index");
-        spyOn(overlayWebView, "showToast").andReturn(1);
     });
 
     it("shows toast", function () {
@@ -35,6 +64,6 @@ describe("ui.toast index", function () {
             };
 
         index.show(success, fail, mockArgs, null);
-        expect(success).toHaveBeenCalledWith(1);
+        expect(success).toHaveBeenCalled();
     });
 });

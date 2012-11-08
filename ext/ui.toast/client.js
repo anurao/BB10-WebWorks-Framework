@@ -21,38 +21,32 @@ var toast = {},
     _storedDismissCallbacks = {};
 
 function listenForButtonCallback() {
-    window.blackberry.event.addEventListener('toast.callback', function (toastId) {
+    window.webworks.event.add("blackberry.event", 'toast.callback', function (toastId) {
         _storedButtonCallbacks[toastId]();
         delete _storedButtonCallbacks[toastId];
     });
 }
 
 function listenForDismissCallback() {
-    window.blackberry.event.addEventListener('toast.dismiss', function (toastId) {
+    window.webworks.event.add("blackberry.event", 'toast.dismiss', function (toastId) {
         _storedDismissCallbacks[toastId]();
         delete _storedDismissCallbacks[toastId];
     });
 }
 
 toast.show = function (message, buttonText, buttonCallback, dismissCallback) {
-    try {
-        var toastId = window.webworks.execSync(ID, 'show', {message: message, buttonText: buttonText});
+    var toastId = window.webworks.execSync(ID, 'show', {message: message, buttonText: buttonText});
 
-        if (buttonCallback) {
-            _storedButtonCallbacks[toastId] = buttonCallback;
-            listenForButtonCallback(toastId);
-        }
-        if (dismissCallback) {
-            _storedDismissCallbacks[toastId] = dismissCallback;
-            listenForDismissCallback(toastId);
-        }
-
-        return toastId;
-
-    } catch (error) {
-        console.log(error);
+    if (buttonCallback) {
+        _storedButtonCallbacks[toastId] = buttonCallback;
+        listenForButtonCallback(toastId);
+    }
+    if (dismissCallback) {
+        _storedDismissCallbacks[toastId] = dismissCallback;
+        listenForDismissCallback(toastId);
     }
 
+    return toastId;
 };
 
 module.exports = toast;
