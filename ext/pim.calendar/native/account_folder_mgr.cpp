@@ -203,7 +203,8 @@ Json::Value AccountFolderManager::GetFolderJson(const bbpim::CalendarFolder& fol
     val["color"] = QString("%1").arg(folder.color(), 6, 16, QChar('0')).toUpper().toStdString();
     val["visible"] = folder.isVisible();
     val["default"] = skipDefaultCheck ? true : IsDefaultFolder(folder, fresh);
-
+    val["enterprise"] = GetAccount(folder.accountId(), false).isEnterprise() == 1 ? true : false;
+    
     return val;
 }
 
