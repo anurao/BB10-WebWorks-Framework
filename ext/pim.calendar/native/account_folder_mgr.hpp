@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012 Research In Motion Limited.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef PIM_CALENDAR_ACCT_FOLDER_MGR_HPP_
 #define PIM_CALENDAR_ACCT_FOLDER_MGR_HPP_
 
@@ -11,6 +27,7 @@
 #include <bb/pim/calendar/CalendarService>
 
 #include "service_provider.hpp"
+#include "thread_sync.hpp"
 
 namespace bbpim = bb::pim::calendar;
 namespace bbpimAccount = bb::pim::account;
@@ -22,9 +39,9 @@ struct AccountInfo {
 	bool enterprise;
 };
 */
-class AccountFolderManager {
+class AccountFolderManager : public ThreadSync {
 public:
-	AccountFolderManager(ServiceProvider& provider, pthread_mutex_t& lock);
+	AccountFolderManager(ServiceProvider& provider);
 	bbpimAccount::Account GetAccount(bbpim::AccountId accountId, bool fresh = true);
 	bbpimAccount::Account GetDefaultAccount(bool fresh = true);
 	QList<bbpimAccount::Account> GetAccounts(bool fresh = true);
@@ -45,10 +62,6 @@ private:
 	void fetchFolders();
 	void fetchDefaultAccount();
 	void fetchDefaultFolder();
-
-    int MUTEX_LOCK();
-    int MUTEX_UNLOCK();
-
 	bbpim::CalendarService* m_calendarService;
 	bbpimAccount::AccountService* m_accountService;
 
@@ -57,8 +70,7 @@ private:
 	//std::map<bbpim::AccountId, AccountInfo> m_accountInfoMap;
 	bbpimAccount::Account m_defaultAccount;
 	bbpim::CalendarFolder m_defaultFolder;
-	ServiceProvider m_provider;
-	pthread_mutex_t m_lock;
+	ServiceProvider& m_provider;
 };
 
 #endif // PIM_CALENDAR_ACCT_FOLDER_MGR_HPP_

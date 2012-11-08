@@ -13,7 +13,8 @@ SRCS+=pim_calendar_qt.cpp \
       pim_calendar_js.cpp \
       timezone_utils.cpp \
       service_provider.cpp \
-      account_folder_mgr.cpp
+      account_folder_mgr.cpp \
+	  thread_sync.cpp
 
 ifeq ($(UNITTEST),yes)
 NAME=test

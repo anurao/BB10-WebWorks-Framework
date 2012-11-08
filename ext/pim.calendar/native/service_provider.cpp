@@ -16,12 +16,29 @@
 
 #include "service_provider.hpp"
 
-ServiceProvider::ServiceProvider() : m_calendarService(new bb::pim::calendar::CalendarService()), m_accountService(new bb::pim::account::AccountService())
+ServiceProvider &ServiceProvider::getServiceProvider()
+{
+    static ServiceProvider sp;
+    return sp;
+}
+
+ServiceProvider::ServiceProvider() : 
+    m_calendarService(new bb::pim::calendar::CalendarService()),
+    m_accountService(new bb::pim::account::AccountService())
 {
 }
 
 ServiceProvider::~ServiceProvider()
 {
+    if (m_calendarService != NULL)
+    {
+        delete m_calendarService;
+    }
+
+    if (m_accountService != NULL)
+    {
+        delete m_accountService;
+    }
 }
 
 bb::pim::calendar::CalendarService* ServiceProvider::GetCalendarService()

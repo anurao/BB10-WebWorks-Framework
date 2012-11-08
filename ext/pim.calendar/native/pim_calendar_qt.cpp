@@ -52,30 +52,17 @@
 namespace webworks {
 
 
-ServiceProvider PimCalendarQt::_provider = ServiceProvider();
-pthread_mutex_t PimCalendarQt::_lock = PTHREAD_MUTEX_INITIALIZER;
-AccountFolderManager PimCalendarQt::_mgr = AccountFolderManager(_provider, _lock);
+ServiceProvider& PimCalendarQt::_provider = ServiceProvider::getServiceProvider();
+AccountFolderManager PimCalendarQt::_mgr = AccountFolderManager(_provider);
 
 PimCalendarQt::PimCalendarQt() /*: _mgr(AccountFolderManager())*/
 {
+    pthread_mutex_init(&_lock, NULL);
 }
 
 PimCalendarQt::~PimCalendarQt()
 {
-}
-
-int PimCalendarQt::MUTEX_LOCK()
-{
-    struct timespec abs_time;
-    clock_gettime(CLOCK_REALTIME , &abs_time);
-    abs_time.tv_sec += 30;
-    return pthread_mutex_timedlock (&_lock, &abs_time);
-    //return pthread_mutex_trylock(&_lock);
-}
-
-int PimCalendarQt::MUTEX_UNLOCK()
-{
-    return pthread_mutex_unlock(&_lock);
+    pthread_mutex_destroy(&_lock);
 }
 
 /****************************************************************
