@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 var toast = {},
-    guid = 0,
     ID = require("./manifest.json").namespace,
     _listeningForCallbacks = false,
     _storedButtonCallbacks = {},
