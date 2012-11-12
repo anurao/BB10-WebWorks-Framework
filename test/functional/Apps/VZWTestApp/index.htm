@@ -1,0 +1,163 @@
+<html>
+	<head>
+		<title>APN Connection</title>
+		<script type="text/javascript" src="webworks-1.0.2.17.js"></script>
+		<!--script src="https://getfirebug.com/firebug-lite.js">
+		{
+			startInNewWindow: false,
+			startOpened: true,
+			enableTrace: true
+		}
+		</script-->
+		<script type="text/javascript">
+		
+			function onConnect(errorMsg) {
+				var msg = "error";
+				switch(errorMsg){
+					case apn.connection.APNConnectMessage.CONNECTED: 
+						msg = "CONNECTED";
+						break;
+					case apn.connection.APNConnectMessage.DISCONNECTED:
+						msg = "DISCONNECTED";
+						break;
+					default:
+						msg = errorMsg;
+				}
+                alert(msg);
+            }
+			
+			function onDisconnect(errorMsg) {
+                var msg = "error";
+				switch(errorMsg){
+					case apn.connection.APNConnectMessage.CONNECTED: 
+						msg = "CONNECTED";
+						break;
+					case apn.connection.APNConnectMessage.DISCONNECTED:
+						msg = "DISCONNECTED";
+						break;
+					default:
+						msg = errorMsg;
+				}
+                alert(msg);
+            }
+			
+			function onFailure(errorMsg) {
+				var msg = "error";
+				switch(errorMsg){
+					case apn.connection.APNConnectMessage.UNKNOWN_CONNECTION_TYPE:
+						msg = "UNKNOWN_CONNECTION_TYPE";
+						break;
+					case apn.connection.APNConnectMessage.CONNECT_FAILURE:
+						msg = "CONNECT_FAILURE";
+						break;
+					case apn.connection.APNConnectMessage.DISCONNECT_FAILURE: 
+						msg = "DISCONNECT_FAILURE";
+						break;
+					case apn.connection.APNConnectMessage.ROUTING_IF_UPDATE_FAILURE: 
+						msg = "ROUTING_IF_UPDATE_FAILURE";
+						break;
+					case apn.connection.APNConnectMessage.CONNECTION_ALREADY_EXISTS:
+						msg = "CONNECTION_ALREADY_EXISTS";
+						break;
+					case apn.connection.APNConnectMessage.NOT_CONNECTED: 
+						msg = "NOT_CONNECTED";
+						break;
+					case apn.connection.APNConnectMessage.PPS_ERROR:
+						msg = "PPS_ERROR";
+						break;
+					case apn.connection.APNConnectMessage.CONNECTED: 
+						msg = "CONNECTED";
+						break;
+					case apn.connection.APNConnectMessage.DISCONNECTED:
+						msg = "DISCONNECTED";
+						break;
+					default:
+						msg = "error";
+				}
+                alert(msg);
+            }
+			
+			function bindToAppsInterface() {
+				var apnType = apn.connection.APNType.CARRIER_APPS;
+				alert("Apn is : " + apnType);
+                var result = apn.connection.bindToInterface(apnType, onConnect, onFailure); 
+            }
+            
+            function disconnectFromAppsInterface() {
+				var apnType = apn.connection.APNType.CARRIER_APPS;
+                var ret = apn.connection.disconnectFromInterface(apnType, onDisconnect, onFailure);
+            }
+			
+			function bindToAdminInterface() {
+				var apnType = apn.connection.APNType.CARRIER_ADMIN;
+				alert("Apn is : " + apnType);;
+                var result = apn.connection.bindToInterface(apnType, onConnect, onFailure); 
+            }
+            
+            function disconnectFromAdminInterface() {
+				var apnType = apn.connection.APNType.CARRIER_ADMIN;
+                var ret = apn.connection.disconnectFromInterface(apnType, onDisconnect, onFailure);
+            }
+			
+			function bindTo800Interface() {
+				var apnType = apn.connection.APNType.CARRIER_800;
+				alert("Apn is : " + apnType);;
+                var result = apn.connection.bindToInterface(apnType, onConnect, onFailure); 
+            }
+            
+            function disconnectFrom800Interface() {
+				var apnType = apn.connection.APNType.CARRIER_800;
+                var ret = apn.connection.disconnectFromInterface(apnType, onDisconnect, onFailure);
+            }
+			
+			function bindToPlanInterface() {
+				var apnType = apn.connection.APNType.PLAN_ADMIN;
+				alert("Apn is : " + apnType);;
+                var result = apn.connection.bindToInterface(apnType, onConnect, onFailure); 
+            }
+            
+            function disconnectFromPlanInterface() {
+				var apnType = apn.connection.APNType.PLAN_ADMIN;
+                var ret = apn.connection.disconnectFromInterface(apnType, onDisconnect, onFailure);
+            }
+			
+        </script>
+	</head>
+	<body bgcolor="#FF9900">
+        <div align="center">
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="bindToAppsInterface()">
+				Connect Carrier_Apps 
+			</button>
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="disconnectFromAppsInterface()">
+				Disconnect Carrrier_Apps
+			</button>
+			<hr/>
+			<hr/>
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="bindToAdminInterface()">
+				Connect Carrier_Admin
+			</button>
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="disconnectFromAdminInterface()">
+				Disconnect Carrier_Admin
+			</button>
+			<hr/>
+			<hr/>
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="bindTo800Interface()">
+				Connect Carrier_800
+			</button>
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="disconnectFrom800Interface()">
+				Disconnect Carrier_800
+			</button>
+			<hr/>
+			<hr/>
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="bindToPlanInterface()">
+				Connect Plan_admin
+			</button>
+			<button style="width:280px; height: 150px; font-size: 200%; background-color: lightgreen" onclick="disconnectFromPlanInterface()">
+				Disconnect Plan_admin
+			</button>
+            <br />
+        </div>
+        <div id="memoryUsage" style="font-size: 200%; background-color: lightblue">
+        </div>
+	</body>
+</html>
