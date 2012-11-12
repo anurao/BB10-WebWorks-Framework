@@ -56,15 +56,15 @@ function onConnect(data){
 	//in case of error send event and return
 	if(data.hasOwnProperty(ERROR) && data.error){
 		_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.CONNECT_FAILURE);
+		_apnType = ""; //reset
 		return;
 	}
 	//get the pps object name i.e carrier_apps_control and store the connect ID
 	var apnObj = _apnType + PPS_CONTROL_PATH_SUFFIX; 
 	_connectId = data[apnObj].dat.connect_id;	
-	//close the pps object
-	_ppsObj.close();
+	_ppsObj.close();	
 	//get the current connected interface 
-	var netIf = getInterface();
+	var netIf = getInterface();			
 	setRoutingInterface(netIf);	
 }  
 
@@ -84,6 +84,8 @@ function onDisconnect(data){
 	//not bring down the connection
 	_connectId = DEFAULT_CONNECT_ID;
 	_ppsObj.close();
+	_ppsObj = null;
+	_apnType = "";
 	if( refRemaining){
 		_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.DISCONNECT_FAILURE);			
 	}else{
@@ -95,24 +97,25 @@ function onDisconnect(data){
   */
 function onStatusObjectChanged(data){
 	var netIf = data[PPS_STATUS_SUFFIX][_apnType].net_if;
-	_ppsStatusObj.close();
 	if (!_connectComplete){
 		setRoutingInterface(netIf);
 	}
 }
 
 function setRoutingInterface(netIf){
-	if(netIf != null){ 
+	if(netIf && netIf != ""){ 
 		var args = " "+ netIf; //add space required for JNEXT parsing
 		//All sockets will be bound to this interface	
-		var retVal = routingHelperJNext.setRoutingInterface(args);	
-		_connectComplete = true;		
+		var retVal = routingHelperJNext.setRoutingInterface(args);		
+		_connectComplete = true;	
+		//close the pps object
 		if(retVal == 0){ //success
-			_event.trigger(APNEventType.CONNECT_EVENT, APNConnectMessage.CONNECTED);
+			_event.trigger(APNEventType.CONNECT_EVENT, APNConnectMessage.CONNECTED);							
 		}else{
 			//disconnect in case of error
 			disconnect(_apnType);
-			_connectId = DEFAULT_CONNECT_ID; //should happen in onDisconnect but for safety
+			_apnType = "";
+			_connectId = DEFAULT_CONNECT_ID; //should happen in onDisconnect but for safet_apnType =
 			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.ROUTING_IF_UPDATE_FAILURE);			
 		}
 	}
@@ -136,20 +139,22 @@ function getInterface(){
 	var path = PPS_PATH_PREFIX + PPS_STATUS_SUFFIX;
 	var _ppsStatusObj = _pps.createObject(path, _pps.PPSMode.FULL);
 	var netIf = null;	
-	if(_ppsStatusObj != null){
+	if(_ppsStatusObj ){
 		_ppsStatusObj.onOpenFailed = openFailed;
-		_ppsStatusObj.onNewData = onStatusObjectChanged;
-		
 		if(_ppsStatusObj.open(_pps.FileMode.RDONLY)){
 			var netIf = _ppsStatusObj.data[PPS_STATUS_SUFFIX][_apnType].net_if;
-			if(netIf != null){
+			if(netIf && netIf != ""){
 				//if netIf is available then close the PPS object. 
 				_ppsStatusObj.close(); 
+				return netIf;
+			}else{
+				_ppsStatusObj.onNewData = onStatusObjectChanged;	
 			}
 		}
 	}else{
 		_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.PPS_ERROR);
 	}
+		
 	return netIf;
 }
 
@@ -223,16 +228,24 @@ module.exports = {
 		//if a connection already exists do not allow creation of a second one. 
 		if(_connectId != DEFAULT_CONNECT_ID){
 			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.CONNECTION_ALREADY_EXISTS);
-			fail(-1, "Cannot open PPS object");
+			fail(-1, "Connection Exists");
 			return;
 		}
 		//get the passed in APN type and validate
 		var apn = JSON.parse(decodeURIComponent(args.apnName));
+		
+		if(!apn || apn === ""){
+			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.UNKNOWN_CONNECTION_TYPE);
+			fail(-1, "Invalid Type");
+			return;
+		}
+		
 		if(! isValidApn(apn)){
 			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.UNKNOWN_CONNECTION_TYPE);
 			fail(-1, "Invalid Type");
 			return;
 		}
+		_connectComplete = false;
 		_apnType = apn;
 		connect(_apnType);
 		success();
@@ -242,20 +255,31 @@ module.exports = {
 		//If there is no connection nothing to disconnect
 		if(_connectId == DEFAULT_CONNECT_ID){
 			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.NOT_CONNECTED);
-			fail(-1, "Cannot open PPS object");
+			fail(-1, "Connection Exists");
 			return;
 		}
         var apn = JSON.parse(decodeURIComponent(args.apnName));
 		//if the APN type passed in is invalid return
-		if(! isValidApn(apn)){
+		if (!apn || apn === ""){
+			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.UNKNOWN_CONNECTION_TYPE);
+			fail(-1, "Invalid Type");
+			return;	
+		}
+		
+		if(!isValidApn(apn)){
 			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.UNKNOWN_CONNECTION_TYPE);
 			fail(-1, "Invalid Type");
 			return;
 		}
-		_apnType = apn;		
-		//if defaultrouting if could not be updated notify but don't diconnect.
+		//check if the apn type being disconnected is the same as the connection
+		if(apn != _apnType){
+			_event.trigger(APNEventType.CONNECT_ERROR, APNConnectMessage.NOT_CONNECTED);
+			fail(-1, "Not Connected");
+			return;
+		}	
+		//if default routing if could not be updated notify but don't diconnect.
 		if(resetRoutingInterface()){
-			disconnect(_apnType);
+			disconnect(apn);
 		}
 		success();
     }
